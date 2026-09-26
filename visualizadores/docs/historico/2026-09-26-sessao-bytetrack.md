@@ -43,3 +43,15 @@ Criar um visualizador com link compartilhável e bem didático, em ReactJS, Thre
 - CI: `testes` passou; `testes-visuais` falhou em 4 de 6 cenários por diferença de fontes do sistema. O teste da vista topo, só com 3D, passou.
 - Correção: fontes embutidas com `@fontsource` e testes bloqueando requisições externas. O teste também revelou o contraste da aba ativa de módulo planejado, que foi corrigido.
 - Referências regeneradas. 6/6 passam localmente em duas rodadas.
+
+## Quinta rodada: merge e publicação
+
+- CI verde no commit `b515aa5`. PR #1 mesclado às 15:53 UTC.
+- Run 36253508693 na `main`: `testes`, `testes-visuais` e `publicar` passaram. O deploy terminou às 15:55:16 UTC.
+- A autora já tinha ativado o Pages antes do PR. Nada falhou: o site só levou ~2 min para sair após o merge, porque o deploy espera os testes visuais.
+- O acesso ao `github.io` a partir do ambiente de desenvolvimento é bloqueado pela política de rede. A confirmação foi feita pela API do GitHub Actions.
+
+## Sexta rodada: PR de documentação
+
+- A autora confirmou no próprio navegador que a página do GitHub Pages abre.
+- Aberto um PR só de documentação (HANDOVER e histórico) para a `main` refletir a publicação. O merge dispara testes e republicação com o mesmo conteúdo.
