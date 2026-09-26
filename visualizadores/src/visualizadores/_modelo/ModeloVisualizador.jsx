@@ -1,0 +1,36 @@
+// MODELO para novos visualizadores. Copie esta pasta para src/visualizadores/<id>/ e registre em src/registro.js.
+// Estrutura sugerida:
+//   logica.js            → matemática pura (sem React), testável em tests/<id>.test.js
+//   Cena3D.jsx           → objetos three.js/R3F dentro do <Viewport3D>
+//   <Nome>Visualizador.jsx → layout: palco (viewport + linha do tempo) e painel lateral
+import { useRef, useState } from 'react';
+import Viewport3D from '../../nucleo/Viewport3D.jsx';
+import Controle from '../../nucleo/ui/Controle.jsx';
+
+export default function ModeloVisualizador() {
+  const [tamanho, setTamanho] = useState(1);
+  const viewport = useRef();
+  return (
+    <div className="bt">
+      <section className="bt-palco">
+        <p className="rotulo">Novo conceito</p>
+        <h1>Título do conceito</h1>
+        <div className="bt-viewport">
+          <Viewport3D ref={viewport}>
+            <mesh position={[0, tamanho / 2, 0]}>
+              <boxGeometry args={[tamanho, tamanho, tamanho]} />
+              <meshStandardMaterial color="#4772b3" />
+            </mesh>
+          </Viewport3D>
+        </div>
+      </section>
+      <aside className="bt-painel">
+        <div className="painel-secao">
+          <Controle id="modelo-tamanho" rotulo="Tamanho" codigo="parametro_da_biblioteca" valor={tamanho} min={0.2} max={3} passo={0.1} aoMudar={setTamanho}>
+            <p className="controle-papel">Explique o papel do parâmetro e o efeito de aumentá-lo ou reduzi-lo.</p>
+          </Controle>
+        </div>
+      </aside>
+    </div>
+  );
+}

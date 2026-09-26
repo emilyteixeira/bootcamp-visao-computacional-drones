@@ -10,6 +10,10 @@ final de contagem na rotatória. O README do projeto contém links diretos para 
 cada notebook no Colab. Os dados são baixados pelas células de preparação. O projeto
 utiliza um ambiente próprio, com dependências e instruções documentadas na pasta.
 
+## Visualizadores 3D
+
+A pasta **[visualizadores](visualizadores/README.md)** contém um laboratório interativo em React e Three.js. O primeiro módulo mostra a associação em duas etapas do ByteTrack e o efeito de cada parâmetro do tracker usado no projeto 3.
+
 ## Projeto 1 · Busca e salvamento com imagens térmicas
 
 A pasta **[projeto-1](projeto-1/README.md)** contém o experimento completo: preparação do
