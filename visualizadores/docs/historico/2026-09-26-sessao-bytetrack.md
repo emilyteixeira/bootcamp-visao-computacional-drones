@@ -32,3 +32,8 @@ Criar um visualizador com link compartilhável e bem didático, em ReactJS, Thre
 - `useblender-cli` não foi encontrada no npm (404), no PyPI nem na web. Nenhum pacote de nome parecido foi instalado, para evitar typosquatting. A autora precisa enviar o link exato.
 - Testes visuais Playwright (6 cenários) criados. Instabilidade da câmera corrigida. 6/6 passam em execuções repetidas.
 - Workflow do GitHub Pages criado. A publicação só acontece após o merge na `main` e a ativação de Pages.
+
+## Terceira rodada: decisão da autora
+
+- Inserção da `useblender-cli` cancelada por enquanto.
+- A autora vai abrir o pull request da branch `claude/modest-feynman-ooop2k` para a `main` do fork `emilyteixeira/bootcamp-visao-computacional-drones`.

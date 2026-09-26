@@ -9,7 +9,7 @@ Atualizado em 26/09/2026. Branch: `claude/modest-feynman-ooop2k`.
 | Módulo ByteTrack | Pronto e publicado em https://claude.ai/artifact/VwfuEtPjrsJmJoM7Y8AX4j (privado até ser compartilhado) |
 | Testes | `npm test`: 5/5 passam. `npm run test:visual`: 6/6 passam em 3 execuções seguidas |
 | GitHub Pages | Workflow pronto, mas ainda não publicado: depende do merge na `main` e de Settings → Pages → Source: GitHub Actions |
-| `useblender-cli` | Pendente: não existe no npm, no PyPI nem em buscas na web (26/09/2026). É preciso o link exato do professor |
+| `useblender-cli` | Cancelada pela autora em 26/09/2026. O visual continua com R3F e drei |
 | Build | `npm run build:link`: arquivo único de aproximadamente 1,2 MB, 350 KB com gzip |
 | Vagas reservadas | `iou-nms`, `kalman`, `linezone`, `homografia` (status `planejado` em `src/registro.js`) |
 
