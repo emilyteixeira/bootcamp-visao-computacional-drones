@@ -1,0 +1,124 @@
+{
+ "schemaVersion": 1,
+ "nome": "baixa-isolada",
+ "descricao": "Detecção de 0,18 sem trilha prévia não produz ID.",
+ "parametros": {
+  "frame_rate": 30.0,
+  "high_conf_det_threshold": 0.25,
+  "track_activation_threshold": 0.35,
+  "minimum_consecutive_frames": 2,
+  "minimum_iou_threshold": 0.1,
+  "lost_track_buffer": 30,
+  "limiar_detector": 0.1,
+  "maximum_frames_without_update": 30
+ },
+ "quadros": [
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      80.0,
+      90.0,
+      120.0,
+      110.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": []
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      84.0,
+      90.0,
+      124.0,
+      110.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": []
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      88.0,
+      90.0,
+      128.0,
+      110.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": []
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      92.0,
+      90.0,
+      132.0,
+      110.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": []
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      96.0,
+      90.0,
+      136.0,
+      110.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": []
+  }
+ ],
+ "ambiente": {
+  "python": "3.11.15",
+  "trackers": "2.6.1",
+  "supervision": "0.30.5",
+  "numpy": "2.3.5",
+  "scipy": "1.17.1"
+ }
+}

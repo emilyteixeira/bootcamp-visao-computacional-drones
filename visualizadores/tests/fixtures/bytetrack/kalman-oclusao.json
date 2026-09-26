@@ -1,0 +1,589 @@
+{
+ "schemaVersion": 1,
+ "nome": "kalman-oclusao",
+ "descricao": "Velocidade constante e lacuna de 5 quadros.",
+ "parametros": {
+  "frame_rate": 30.0,
+  "high_conf_det_threshold": 0.25,
+  "track_activation_threshold": 0.35,
+  "minimum_consecutive_frames": 2,
+  "minimum_iou_threshold": 0.1,
+  "lost_track_buffer": 30,
+  "limiar_detector": 0.1,
+  "maximum_frames_without_update": 30
+ },
+ "quadros": [
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      70.0,
+      185.0,
+      130.0,
+      215.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": -1,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      70.0,
+      185.0,
+      130.0,
+      215.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      82.0,
+      188.0,
+      142.0,
+      218.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      81.4313,
+      187.8578,
+      141.4313,
+      217.8578
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      94.0,
+      191.0,
+      154.0,
+      221.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 3,
+     "xyxy": [
+      93.177,
+      190.7942,
+      153.177,
+      220.7942
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      106.0,
+      194.0,
+      166.0,
+      224.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 4,
+     "xyxy": [
+      105.5103,
+      193.8776,
+      165.5103,
+      223.8776
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      118.0,
+      197.0,
+      178.0,
+      227.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 5,
+     "xyxy": [
+      117.7072,
+      196.9268,
+      177.7072,
+      226.9268
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      130.0,
+      200.0,
+      190.0,
+      230.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 6,
+     "xyxy": [
+      129.8253,
+      199.9563,
+      189.8253,
+      229.9563
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      142.0,
+      203.0,
+      202.0,
+      233.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 7,
+     "xyxy": [
+      141.9014,
+      202.9753,
+      201.9014,
+      232.9753
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      154.0,
+      206.0,
+      214.0,
+      236.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 8,
+     "xyxy": [
+      153.9508,
+      205.9877,
+      213.9508,
+      235.9877
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [],
+   "saida": [],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 1,
+     "consecutivas": 8,
+     "xyxy": [
+      165.9548,
+      208.9887,
+      225.9548,
+      238.9887
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [],
+   "saida": [],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 2,
+     "consecutivas": 0,
+     "xyxy": [
+      177.9589,
+      211.9897,
+      237.9589,
+      241.9897
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [],
+   "saida": [],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 3,
+     "consecutivas": 0,
+     "xyxy": [
+      189.963,
+      214.9907,
+      249.963,
+      244.9907
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [],
+   "saida": [],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 4,
+     "consecutivas": 0,
+     "xyxy": [
+      201.967,
+      217.9918,
+      261.967,
+      247.9918
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [],
+   "saida": [],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 5,
+     "consecutivas": 0,
+     "xyxy": [
+      213.9711,
+      220.9928,
+      273.9711,
+      250.9928
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      226.0,
+      224.0,
+      286.0,
+      254.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      225.9988,
+      223.9997,
+      285.9988,
+      253.9997
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      238.0,
+      227.0,
+      298.0,
+      257.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      238.0026,
+      227.0006,
+      298.0026,
+      257.0006
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      250.0,
+      230.0,
+      310.0,
+      260.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 3,
+     "xyxy": [
+      250.004,
+      230.001,
+      310.004,
+      260.001
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      262.0,
+      233.0,
+      322.0,
+      263.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 4,
+     "xyxy": [
+      262.0037,
+      233.0009,
+      322.0037,
+      263.0009
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      274.0,
+      236.0,
+      334.0,
+      266.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 5,
+     "xyxy": [
+      274.0028,
+      236.0007,
+      334.0028,
+      266.0007
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      286.0,
+      239.0,
+      346.0,
+      269.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 6,
+     "xyxy": [
+      286.0018,
+      239.0004,
+      346.0018,
+      269.0004
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      298.0,
+      242.0,
+      358.0,
+      272.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 7,
+     "xyxy": [
+      298.001,
+      242.0003,
+      358.001,
+      272.0003
+     ]
+    }
+   ]
+  }
+ ],
+ "ambiente": {
+  "python": "3.11.15",
+  "trackers": "2.6.1",
+  "supervision": "0.30.5",
+  "numpy": "2.3.5",
+  "scipy": "1.17.1"
+ }
+}

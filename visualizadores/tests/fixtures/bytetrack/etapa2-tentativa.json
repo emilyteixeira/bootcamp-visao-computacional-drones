@@ -1,0 +1,120 @@
+{
+ "schemaVersion": 1,
+ "nome": "etapa2-tentativa",
+ "descricao": "Tentativa recebe apenas caixa 0,20 no quadro seguinte.",
+ "parametros": {
+  "frame_rate": 30.0,
+  "high_conf_det_threshold": 0.25,
+  "track_activation_threshold": 0.35,
+  "minimum_consecutive_frames": 2,
+  "minimum_iou_threshold": 0.1,
+  "lost_track_buffer": 30,
+  "limiar_detector": 0.1,
+  "maximum_frames_without_update": 30
+ },
+ "quadros": [
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      80.0,
+      90.0,
+      120.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": -1,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      80.0,
+      90.0,
+      120.0,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      82.0,
+      90.0,
+      122.0,
+      110.0
+     ],
+     "confidence": 0.2
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      81.9052,
+      90.0,
+      121.9052,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      84.0,
+      90.0,
+      124.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 3,
+     "xyxy": [
+      83.8628,
+      90.0,
+      123.8628,
+      110.0
+     ]
+    }
+   ]
+  }
+ ],
+ "ambiente": {
+  "python": "3.11.15",
+  "trackers": "2.6.1",
+  "supervision": "0.30.5",
+  "numpy": "2.3.5",
+  "scipy": "1.17.1"
+ }
+}

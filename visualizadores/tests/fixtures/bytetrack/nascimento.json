@@ -1,0 +1,184 @@
+{
+ "schemaVersion": 1,
+ "nome": "nascimento",
+ "descricao": "Uma detecção alta por quadro; ID só após a confirmação.",
+ "parametros": {
+  "frame_rate": 30.0,
+  "high_conf_det_threshold": 0.25,
+  "track_activation_threshold": 0.35,
+  "minimum_consecutive_frames": 2,
+  "minimum_iou_threshold": 0.1,
+  "lost_track_buffer": 30,
+  "limiar_detector": 0.1,
+  "maximum_frames_without_update": 30
+ },
+ "quadros": [
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      80.0,
+      90.0,
+      120.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": -1,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      80.0,
+      90.0,
+      120.0,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      85.0,
+      90.0,
+      125.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      84.763,
+      90.0,
+      124.763,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      90.0,
+      90.0,
+      130.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 3,
+     "xyxy": [
+      89.6571,
+      90.0,
+      129.6571,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      95.0,
+      90.0,
+      135.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 4,
+     "xyxy": [
+      94.7959,
+      90.0,
+      134.7959,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      100.0,
+      90.0,
+      140.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 5,
+     "xyxy": [
+      99.878,
+      90.0,
+      139.878,
+      110.0
+     ]
+    }
+   ]
+  }
+ ],
+ "ambiente": {
+  "python": "3.11.15",
+  "trackers": "2.6.1",
+  "supervision": "0.30.5",
+  "numpy": "2.3.5",
+  "scipy": "1.17.1"
+ }
+}
