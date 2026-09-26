@@ -8,7 +8,7 @@ Atualizado em 26/09/2026. Branch: `claude/modest-feynman-ooop2k`.
 |:--|:--|
 | Módulo ByteTrack | Pronto e publicado em https://claude.ai/artifact/VwfuEtPjrsJmJoM7Y8AX4j (privado até ser compartilhado) |
 | Testes | `npm test`: 5/5 passam. `npm run test:visual`: 6/6 passam em 3 execuções seguidas |
-| GitHub Pages | Workflow pronto, mas ainda não publicado: depende do merge na `main` e de Settings → Pages → Source: GitHub Actions |
+| GitHub Pages | Publicado em https://emilyteixeira.github.io/bootcamp-visao-computacional-drones/#bytetrack (run 36253508693, deploy às 15:55 UTC de 26/09/2026). Cada push na `main` que altere `visualizadores/` republica |
 | `useblender-cli` | Cancelada pela autora em 26/09/2026. O visual continua com R3F e drei |
 | Build | `npm run build:link`: arquivo único de aproximadamente 1,2 MB, 350 KB com gzip |
 | Vagas reservadas | `iou-nms`, `kalman`, `linezone`, `homografia` (status `planejado` em `src/registro.js`) |
@@ -64,7 +64,7 @@ Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baix
 
 ## 6. Próximos passos sugeridos
 
-1. Compartilhar o Artifact pelo menu *Share* para os alunos.
+1. Compartilhar com os alunos o link público do GitHub Pages.
 2. Implementar a vaga `kalman` reaproveitando `bytetrack/kalman.js` (elipses de covariância).
 3. Implementar `linezone`, espelhando `sv.LineZone` com âncoras nos 4 cantos (projeto final).
 4. Opcional: publicar `dist/` no GitHub Pages para ter um link público sem login.
