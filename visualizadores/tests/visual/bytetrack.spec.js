@@ -56,5 +56,7 @@ test('layout de celular sem rolagem horizontal', async ({ page }) => {
   await abrirNoQuadro(page, 30);
   const larguras = await page.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]);
   expect(larguras[0]).toBeLessThanOrEqual(larguras[1]);
-  await expect(page).toHaveScreenshot('bytetrack-celular.png');
+  // Este teste valida o layout em 390 px. O canvas WebGL ocupa ~62% da tela e sua rasterização
+  // por software varia entre máquinas; o render 3D já é coberto pelos testes de desktop acima.
+  await expect(page).toHaveScreenshot('bytetrack-celular.png', { mask: [page.locator('.viewport canvas')] });
 });
