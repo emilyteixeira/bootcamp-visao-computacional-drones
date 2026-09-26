@@ -1,0 +1,61 @@
+# Testa e publica visualizadores/ no GitHub Pages.
+# Pré-requisito único: Settings → Pages → Build and deployment → Source: "GitHub Actions".
+# URL resultante: https://<usuario>.github.io/bootcamp-visao-computacional-drones/
+name: Visualizadores · GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['visualizadores/**', '.github/workflows/visualizadores-pages.yml']
+  pull_request:
+    paths: ['visualizadores/**', '.github/workflows/visualizadores-pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: visualizadores
+
+jobs:
+  testes:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: visualizadores/package-lock.json }
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:pages
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: visualizadores/dist }
+
+  testes-visuais:
+    # Mesmo Chromium (Playwright 1.56.1) e renderização WebGL por software (SwiftShader).
+    runs-on: ubuntu-24.04
+    container: mcr.microsoft.com/playwright:v1.56.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm run test:visual
+        env: { HOME: /root }
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with: { name: diferencas-visuais, path: visualizadores/test-results, retention-days: 7 }
+
+  publicar:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [testes, testes-visuais]
+    runs-on: ubuntu-24.04
+    permissions: { pages: write, id-token: write }
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}#bytetrack
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
