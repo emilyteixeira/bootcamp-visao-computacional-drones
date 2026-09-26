@@ -46,6 +46,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .aba-modulo:hover { background: #3a3a3a; color: var(--texto); }
 .aba-modulo.ativa { background: var(--acento); color: #fff; }
 .aba-modulo.planejado { color: var(--texto-3); }
+.aba-modulo.ativa.planejado { color: #fff; }
 .selo { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; border: 1px solid var(--borda); border-radius: 10px; padding: 0 6px; }
 .conteudo { flex: 1; padding-inline: 16px; padding-block: 16px; }
 .carregando { padding: 40px; color: var(--texto-3); }

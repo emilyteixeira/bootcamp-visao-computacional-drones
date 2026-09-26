@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-// Fontes externas bloqueadas: o fallback local deixa os screenshots iguais em qualquer máquina.
+// As fontes vêm do bundle (@fontsource): nenhuma requisição externa durante o teste.
 test.beforeEach(async ({ page }) => {
-  await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+  await page.route(/^https?:\/\/(?!localhost)/, (r) => r.abort());
 });
 
 const erros = [];

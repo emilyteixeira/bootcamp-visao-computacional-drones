@@ -37,3 +37,9 @@ Criar um visualizador com link compartilhável e bem didático, em ReactJS, Thre
 
 - Inserção da `useblender-cli` cancelada por enquanto.
 - A autora vai abrir o pull request da branch `claude/modest-feynman-ooop2k` para a `main` do fork `emilyteixeira/bootcamp-visao-computacional-drones`.
+
+## Quarta rodada: PR emilyteixeira/bootcamp-visao-computacional-drones#1
+
+- CI: `testes` passou; `testes-visuais` falhou em 4 de 6 cenários por diferença de fontes do sistema. O teste da vista topo, só com 3D, passou.
+- Correção: fontes embutidas com `@fontsource` e testes bloqueando requisições externas. O teste também revelou o contraste da aba ativa de módulo planejado, que foi corrigido.
+- Referências regeneradas. 6/6 passam localmente em duas rodadas.

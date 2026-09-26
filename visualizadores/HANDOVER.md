@@ -50,6 +50,8 @@ Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baix
 | IDs novos depois do viaduto, mesmo com buffer 60 | A velocidade de tamanho do Kalman encolhia a caixa prevista até sumir | `prever(kf, congelarTamanho)` zera vw e vh quando a trilha não está `ativa`, como no original |
 | Trocas de ID artificiais no cenário "Drone alto" | Carros da mesma faixa com velocidades diferentes se atravessavam | Velocidade fixada por faixa |
 | Teste visual da vista topo instável (3% de pixels) | A animação da câmera parava a menos de 0,01 do destino, em ponto variável | Encaixe exato no destino em `AnimadorDeVista` |
+| Testes visuais falharam na CI em 4 de 6 cenários (3–11% de pixels) | Fontes de fallback do sistema diferentes entre este contêiner e a imagem do Playwright | Fontes Barlow e JetBrains Mono embutidas via `@fontsource` (sem Google Fonts) |
+| Aba ativa de módulo planejado ilegível | `.aba-modulo.planejado` sobrescrevia a cor de `.ativa` | Regra `.aba-modulo.ativa.planejado` |
 | Terminal travado | `cat > arquivo` sem heredoc ficou esperando stdin | Sempre usar heredoc |
 
 ## 5. Efeitos calibrados (Notebook 02 como base, formato IDs/trocas/cobertura)

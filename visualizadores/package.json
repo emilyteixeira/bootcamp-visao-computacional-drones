@@ -14,6 +14,9 @@
     "build:pages": "vite build --base=/bootcamp-visao-computacional-drones/"
   },
   "dependencies": {
+    "@fontsource/barlow": "^5.3.0",
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.1",
     "react": "^19.3.0",
