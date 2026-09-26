@@ -7,7 +7,9 @@ Atualizado em 26/09/2026. Branch: `claude/modest-feynman-ooop2k`.
 | Item | Estado |
 |:--|:--|
 | Módulo ByteTrack | Pronto e publicado em https://claude.ai/artifact/VwfuEtPjrsJmJoM7Y8AX4j (privado até ser compartilhado) |
-| Testes | `npm test`: 5/5 passam |
+| Testes | `npm test`: 5/5 passam. `npm run test:visual`: 6/6 passam em 3 execuções seguidas |
+| GitHub Pages | Workflow pronto, mas ainda não publicado: depende do merge na `main` e de Settings → Pages → Source: GitHub Actions |
+| `useblender-cli` | Pendente: não existe no npm, no PyPI nem em buscas na web (26/09/2026). É preciso o link exato do professor |
 | Build | `npm run build:link`: arquivo único de aproximadamente 1,2 MB, 350 KB com gzip |
 | Vagas reservadas | `iou-nms`, `kalman`, `linezone`, `homografia` (status `planejado` em `src/registro.js`) |
 
@@ -47,6 +49,7 @@ Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baix
 | Nenhuma trilha nascia | `associarPorIou` deduzia `nCol` da matriz, que fica vazia quando há 0 trilhas | `nCol` passou a ser um argumento explícito em todas as chamadas |
 | IDs novos depois do viaduto, mesmo com buffer 60 | A velocidade de tamanho do Kalman encolhia a caixa prevista até sumir | `prever(kf, congelarTamanho)` zera vw e vh quando a trilha não está `ativa`, como no original |
 | Trocas de ID artificiais no cenário "Drone alto" | Carros da mesma faixa com velocidades diferentes se atravessavam | Velocidade fixada por faixa |
+| Teste visual da vista topo instável (3% de pixels) | A animação da câmera parava a menos de 0,01 do destino, em ponto variável | Encaixe exato no destino em `AnimadorDeVista` |
 | Terminal travado | `cat > arquivo` sem heredoc ficou esperando stdin | Sempre usar heredoc |
 
 ## 5. Efeitos calibrados (Notebook 02 como base, formato IDs/trocas/cobertura)

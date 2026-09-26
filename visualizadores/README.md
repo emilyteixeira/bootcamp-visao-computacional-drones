@@ -23,6 +23,8 @@ cd visualizadores
 npm install
 npm run dev          # http://localhost:5173/#bytetrack
 npm test             # testes da lógica (node --test)
+npm run test:visual  # testes visuais Playwright (6 cenários, referências em tests/visual/referencias/)
+npm run build:pages  # dist/ com base /bootcamp-visao-computacional-drones/ (GitHub Pages)
 npm run build        # dist/ (vários arquivos, para hospedagem estática)
 npm run build:link   # dist-link/laboratorio-bytetrack.html (arquivo único, para publicar)
 ```
@@ -55,5 +57,9 @@ tests/bytetrack.test.js
 2. Em `src/registro.js`, mude a entrada para `status: 'pronto'` e adicione `Componente: lazy(() => import('./visualizadores/<id>/<Nome>.jsx'))`. As vagas reservadas são `iou-nms`, `kalman`, `linezone` e `homografia`.
 3. Mantenha a matemática em `.js` puro e crie `tests/<id>.test.js`.
 4. Rode `npm run build:link` e republique o HTML no mesmo link.
+
+## GitHub Pages
+
+O workflow `.github/workflows/visualizadores-pages.yml` roda `npm test`, os testes visuais e a build. Em push na `main`, ele publica em `https://emilyteixeira.github.io/bootcamp-visao-computacional-drones/#bytetrack`. Pré-requisito: em Settings → Pages, escolha Source: **GitHub Actions**. Localmente, `CHROMIUM_PATH=/opt/pw-browsers/chromium` aponta o Chromium do container.
 
 Documentos de continuidade: [HANDOVER.md](HANDOVER.md) e [docs/historico/](docs/historico/).

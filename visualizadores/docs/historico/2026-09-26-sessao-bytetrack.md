@@ -25,3 +25,10 @@ Criar um visualizador com link compartilhável e bem didático, em ReactJS, Thre
 5. 5 testes em `tests/bytetrack.test.js`.
 6. Publicado em https://claude.ai/artifact/VwfuEtPjrsJmJoM7Y8AX4j.
 7. Commit e push na branch `claude/modest-feynman-ooop2k`.
+
+## Segunda rodada: useblender-cli, testes visuais e GitHub Pages
+
+- Pedido: adaptar o visual com `useblender-cli` (indicada pelo professor), refazer os testes, incluindo os visuais, e publicar no GitHub Pages.
+- `useblender-cli` não foi encontrada no npm (404), no PyPI nem na web. Nenhum pacote de nome parecido foi instalado, para evitar typosquatting. A autora precisa enviar o link exato.
+- Testes visuais Playwright (6 cenários) criados. Instabilidade da câmera corrigida. 6/6 passam em execuções repetidas.
+- Workflow do GitHub Pages criado. A publicação só acontece após o merge na `main` e a ativação de Pages.

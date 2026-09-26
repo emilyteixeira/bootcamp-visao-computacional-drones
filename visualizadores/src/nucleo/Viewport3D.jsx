@@ -42,7 +42,13 @@ function AnimadorDeVista({ destino, controlesRef }) {
     camera.position.lerp(pos.current, k);
     c.target.lerp(alvo.current, k);
     c.update();
-    if (camera.position.distanceTo(pos.current) < 0.01) ativo.current = false;
+    if (camera.position.distanceTo(pos.current) < 0.01) {
+      // Encaixa no destino exato: a vista final fica idêntica em toda execução.
+      camera.position.copy(pos.current);
+      c.target.copy(alvo.current);
+      c.update();
+      ativo.current = false;
+    }
   });
   return null;
 }
