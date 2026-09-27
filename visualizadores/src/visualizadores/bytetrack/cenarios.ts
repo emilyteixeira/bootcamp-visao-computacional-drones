@@ -1,21 +1,24 @@
 // Cenas sintéticas vistas de um drone (imagem 1280×720 px, 30 FPS).
 // Cada cena tem verdade de solo (ground truth), oclusores e um modelo de detector.
 // Tudo é determinístico: mesma semente → mesmas detecções.
-import { criarRng } from '../../nucleo/rng.js';
-import { area, centroParaCaixa } from '../../nucleo/geometria.js';
+import { criarRng } from '../../nucleo/rng.ts';
+import { area, centroParaCaixa, type Caixa } from '../../nucleo/geometria.ts';
+import type { Cena, Cenario, Deteccao, GtNoQuadro, Oclusor } from './tipos.ts';
 
 export const LARGURA = 1280;
 export const ALTURA = 720;
 export const FPS_VIDEO = 30;
 
 // Trajetória retilínea com velocidade em px/quadro e, opcionalmente, parada.
-const reta = (x0, y0, vx, vy, parada) => (t) => {
+const reta = (x0: number, y0: number, vx: number, vy: number, parada?: { inicio: number; fim: number }) => (t: number): [number, number] => {
   let tt = t;
   if (parada && t > parada.inicio) tt = t < parada.fim ? parada.inicio : t - (parada.fim - parada.inicio);
   return [x0 + vx * tt, y0 + vy * tt];
 };
 
-export const CENARIOS = {
+export type IdCenario = 'oclusao' | 'cruzamento' | 'alto';
+
+export const CENARIOS: Record<IdCenario, Cenario> = {
   oclusao: {
     id: 'oclusao',
     titulo: 'Árvore e viaduto',
@@ -82,7 +85,7 @@ export const CENARIOS = {
 };
 
 // Visibilidade = fração não coberta pelos oclusores, ponderada pela densidade.
-function visibilidade(caixa, oclusores) {
+function visibilidade(caixa: Caixa, oclusores: Oclusor[]): number {
   const a = area(caixa) || 1;
   let perda = 0;
   for (const o of oclusores) {
@@ -94,7 +97,7 @@ function visibilidade(caixa, oclusores) {
 }
 
 // Detector vê só a parte visível quando um oclusor denso corta o veículo lateralmente.
-function recortarVisivel(caixa, oclusores) {
+function recortarVisivel(caixa: Caixa, oclusores: Oclusor[]): Caixa {
   let [x1, y1, x2, y2] = caixa;
   for (const o of oclusores) {
     if (o.densidade < 0.9) continue;
@@ -107,17 +110,17 @@ function recortarVisivel(caixa, oclusores) {
 }
 
 // Gera { verdade: [[{id, caixa, visivel}]], deteccoes: [[{caixa, score, gtId}]] } por quadro.
-export function gerarCena(cenario, semente = cenario.semente) {
+export function gerarCena(cenario: Cenario, semente = cenario.semente): Cena {
   const rng = criarRng(semente);
   const { detector: d } = cenario;
-  const baseScore = {};
+  const baseScore: Record<number, number> = {};
   for (const v of cenario.veiculos) baseScore[v.id] = rng.entre(d.score[0], d.score[1]);
 
-  const verdade = [];
-  const deteccoes = [];
+  const verdade: GtNoQuadro[][] = [];
+  const deteccoes: Deteccao[][] = [];
   for (let t = 0; t < cenario.quadros; t++) {
-    const gts = [];
-    const dets = [];
+    const gts: GtNoQuadro[] = [];
+    const dets: Deteccao[] = [];
     for (const v of cenario.veiculos) {
       if (t < v.inicio) continue;
       const [cx, cy] = v.pos(t - v.inicio);
@@ -129,9 +132,9 @@ export function gerarCena(cenario, semente = cenario.semente) {
       if (vis < 0.22 || rng.proximo() < d.perda) continue; // não detectado
       const recorte = recortarVisivel(caixa, cenario.oclusores);
       const s = d.ruido;
-      const base = caixa.map((c, k) => c * 0.65 + recorte[k] * 0.35);
+      const base = caixa.map((c, k) => c * 0.65 + recorte[k] * 0.35) as Caixa;
       const jitter = [rng.normal() * s * v.w, rng.normal() * s * v.h, rng.normal() * s * v.w, rng.normal() * s * v.h];
-      const caixaDet = base.map((c, k) => c + jitter[k]);
+      const caixaDet = base.map((c, k) => c + jitter[k]) as Caixa;
       if (caixaDet[2] - caixaDet[0] < 4 || caixaDet[3] - caixaDet[1] < 4) continue;
       const score = Math.min(0.99, Math.max(0.01, baseScore[v.id] * Math.pow(vis, 1.6) + rng.normal() * 0.05));
       dets.push({ caixa: caixaDet, score, gtId: v.id });

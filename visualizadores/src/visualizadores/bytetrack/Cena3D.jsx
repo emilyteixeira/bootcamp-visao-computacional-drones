@@ -4,8 +4,8 @@ import { useMemo } from 'react';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { pxParaMundo, ESCALA } from '../../nucleo/Viewport3D.jsx';
-import { LARGURA, ALTURA } from './cenarios.js';
-import { COR_ETAPA, corDoId } from './cores.js';
+import { LARGURA, ALTURA } from './cenarios.ts';
+import { COR_ETAPA, corDoId } from './cores.ts';
 
 const PASSO_TEMPO = 0.025; // altura por quadro no modo espaço-tempo (240 quadros → 6 unidades)
 const Y_ANOTACAO = 0.34;

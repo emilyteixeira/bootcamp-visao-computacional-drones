@@ -9,9 +9,10 @@
     "build": "vite build",
     "build:link": "SINGLE=1 vite build && node scripts/preparar-link.mjs",
     "preview": "vite preview --port 4173",
-    "test": "node --test tests/*.test.js",
+    "test": "tsx --test tests/*.test.ts",
     "test:visual": "playwright test",
-    "build:pages": "vite build --base=/bootcamp-visao-computacional-drones/"
+    "build:pages": "vite build --base=/bootcamp-visao-computacional-drones/",
+    "typecheck": "tsc -p ."
   },
   "dependencies": {
     "@fontsource/barlow": "^5.3.0",
@@ -25,7 +26,13 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
+    "@types/node": "^22.20.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "^6.1.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vite-plugin-singlefile": "^2.3.3"
   }

@@ -1,7 +1,29 @@
 // Metadados didáticos de cada parâmetro. Nomes de `trackers.ByteTrackTracker` (trackers==2.6.1),
 // a API usada nos notebooks do projeto-3, com o equivalente aproximado em `sv.ByteTrack`
 // (API antiga do Supervision, substituída pelo pacote `trackers`).
-export const PARAMETROS = [
+import type { ChaveParametro, ParametrosByteTrack } from './tipos.ts';
+
+export interface MetaParametro {
+  chave: ChaveParametro;
+  rotulo: string;
+  codigo: string;
+  sv: string;
+  min: number;
+  max: number;
+  passo: number;
+  papel: string;
+  sobe: string;
+  desce: string;
+}
+
+export interface Predefinicao {
+  id: string;
+  rotulo: string;
+  descricao: string;
+  valores: ParametrosByteTrack;
+}
+
+export const PARAMETROS: MetaParametro[] = [
   {
     chave: 'limiar_detector',
     rotulo: 'Limiar do detector',
@@ -74,7 +96,7 @@ export const PARAMETROS = [
   },
 ];
 
-export const PREDEFINICOES = [
+export const PREDEFINICOES: Predefinicao[] = [
   {
     id: 'nb02',
     rotulo: 'Notebook 02',
@@ -102,8 +124,8 @@ export const PREDEFINICOES = [
 ];
 
 // Faixas para o gráfico de sensibilidade (valores inteiros onde o parâmetro é inteiro).
-export function valoresVarredura(meta, n = 14) {
-  const vals = [];
+export function valoresVarredura(meta: MetaParametro, n = 14): number[] {
+  const vals: number[] = [];
   for (let i = 0; i < n; i++) {
     const v = meta.min + ((meta.max - meta.min) * i) / (n - 1);
     vals.push(meta.passo >= 1 ? Math.round(v) : Math.round(v * 100) / 100);

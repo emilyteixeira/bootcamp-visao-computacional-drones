@@ -2,13 +2,23 @@
 // Como F, H e os ruídos são diagonais por coordenada, o filtro 8D se decompõe em
 // quatro filtros 2D independentes (posição, velocidade) — mesma matemática, menos código.
 // Pesos de ruído proporcionais ao tamanho da caixa, como no ByteTrack original.
+import type { CaixaCentro } from '../../nucleo/geometria.ts';
+
+// Estado por coordenada: [posição, velocidade] e covariância 2×2.
+type Par = [number, number];
+type Mat2 = [Par, Par];
+export interface Kalman {
+  x: Par[];
+  P: Mat2[];
+}
+
 const PESO_POS = 1 / 20;
 const PESO_VEL = 1 / 160;
 
-export function criarKalman([cx, cy, w, h]) {
+export function criarKalman([cx, cy, w, h]: CaixaCentro): Kalman {
   const escala = [h, h, w, h];
-  const x = [cx, cy, w, h].map((m) => [m, 0]);
-  const P = escala.map((e) => [
+  const x = [cx, cy, w, h].map((m): Par => [m, 0]);
+  const P = escala.map((e): Mat2 => [
     [(2 * PESO_POS * e) ** 2, 0],
     [0, (10 * PESO_VEL * e) ** 2],
   ]);
@@ -18,12 +28,12 @@ export function criarKalman([cx, cy, w, h]) {
 // congelarTamanho: como no repositório original do ByteTrack (não no trackers 2.6.1, que usa
 // XYXY e deixa a caixa encolher), trilhas fora do estado "ativa" zeram a velocidade de tamanho.
 // Simplificação didática mantida por decisão da autora (D2, docs/auditoria-bytetrack-etapa0.md).
-export function prever(kf, congelarTamanho = false) {
+export function prever(kf: Kalman, congelarTamanho = false): Kalman {
   if (congelarTamanho) { kf.x[2][1] = 0; kf.x[3][1] = 0; }
   const h = kf.x[3][0];
   const escala = [h, h, kf.x[2][0], h];
-  kf.x = kf.x.map(([p, v]) => [p + v, v]);
-  kf.P = kf.P.map((P, k) => {
+  kf.x = kf.x.map(([p, v]): Par => [p + v, v]);
+  kf.P = kf.P.map((P, k): Mat2 => {
     const q = [(PESO_POS * escala[k]) ** 2, (PESO_VEL * escala[k]) ** 2];
     // P' = F P Fᵀ + Q, com F = [[1,1],[0,1]]
     const a = P[0][0] + P[0][1] + P[1][0] + P[1][1] + q[0];
@@ -34,10 +44,10 @@ export function prever(kf, congelarTamanho = false) {
   return kf;
 }
 
-export function corrigir(kf, [cx, cy, w, h]) {
+export function corrigir(kf: Kalman, [cx, cy, w, h]: CaixaCentro): Kalman {
   const med = [cx, cy, w, h];
   const escala = [kf.x[3][0], kf.x[3][0], kf.x[2][0], kf.x[3][0]];
-  kf.x = kf.x.map(([p, v], k) => {
+  kf.x = kf.x.map(([p, v], k): Par => {
     const P = kf.P[k];
     const r = (PESO_POS * escala[k]) ** 2;
     const S = P[0][0] + r;
@@ -53,5 +63,5 @@ export function corrigir(kf, [cx, cy, w, h]) {
   return kf;
 }
 
-export const estadoCentro = (kf) => kf.x.map(([p]) => p);
-export const velocidade = (kf) => [kf.x[0][1], kf.x[1][1]];
+export const estadoCentro = (kf: Kalman): CaixaCentro => [kf.x[0][0], kf.x[1][0], kf.x[2][0], kf.x[3][0]];
+export const velocidade = (kf: Kalman): Par => [kf.x[0][1], kf.x[1][1]];

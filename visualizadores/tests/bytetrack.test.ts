@@ -1,10 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { iou } from '../src/nucleo/geometria.js';
-import { atribuicaoHungara } from '../src/nucleo/hungaro.js';
-import { CENARIOS, gerarCena } from '../src/visualizadores/bytetrack/cenarios.js';
-import { executar, PARAMETROS_PADRAO } from '../src/visualizadores/bytetrack/bytetrack.js';
-import { avaliar } from '../src/visualizadores/bytetrack/metricas.js';
+import { iou } from '../src/nucleo/geometria.ts';
+import { atribuicaoHungara } from '../src/nucleo/hungaro.ts';
+import { CENARIOS, gerarCena } from '../src/visualizadores/bytetrack/cenarios.ts';
+import { executar, PARAMETROS_PADRAO } from '../src/visualizadores/bytetrack/bytetrack.ts';
+import { avaliar } from '../src/visualizadores/bytetrack/metricas.ts';
+import type { Metricas } from '../src/visualizadores/bytetrack/tipos.ts';
 
 test('IoU de caixas idênticas é 1 e disjuntas é 0', () => {
   assert.equal(iou([0, 0, 10, 10], [0, 0, 10, 10]), 1);
@@ -28,7 +29,7 @@ test('etapa 2 do BYTE só atua quando há detecções baixas no tracker', () => 
   const cena = gerarCena(CENARIOS.oclusao);
   const comBaixas = avaliar(cena, executar(cena, PARAMETROS_PADRAO));
   const semBaixas = avaliar(cena, executar(cena, { ...PARAMETROS_PADRAO, limiar_detector: 0.25 }));
-  const recuperadas = (m) => m.eventos.filter((e) => e.tipo === 'etapa2').length;
+  const recuperadas = (m: Metricas) => m.eventos.filter((e) => e.tipo === 'etapa2').length;
   assert.ok(recuperadas(comBaixas) > 0);
   assert.equal(recuperadas(semBaixas), 0);
   assert.ok(comBaixas.cobertura > semBaixas.cobertura);

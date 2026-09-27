@@ -1,12 +1,12 @@
 // Painéis laterais do visualizador ByteTrack: parâmetros, quadro atual, impacto e conceito.
 import { useMemo, useState } from 'react';
 import Controle from '../../nucleo/ui/Controle.jsx';
-import { PARAMETROS, PREDEFINICOES, valoresVarredura } from './parametros.js';
-import { executar, quadrosMaximosPerdidos } from './bytetrack.js';
-import { avaliar } from './metricas.js';
+import { PARAMETROS, PREDEFINICOES, valoresVarredura } from './parametros.ts';
+import { executar, quadrosMaximosPerdidos } from './bytetrack.ts';
+import { avaliar } from './metricas.ts';
 import GraficoSensibilidade from './GraficoSensibilidade.jsx';
-import { COR_ETAPA, corDoId } from './cores.js';
-import { iou } from '../../nucleo/geometria.js';
+import { COR_ETAPA, corDoId } from './cores.ts';
+import { iou } from '../../nucleo/geometria.ts';
 
 const fmt = (v, passo) => (passo >= 1 ? String(v) : v.toFixed(2));
 

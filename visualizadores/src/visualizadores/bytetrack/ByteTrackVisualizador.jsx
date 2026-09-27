@@ -3,11 +3,11 @@ import { useMemo, useRef, useState } from 'react';
 import Viewport3D, { VISTAS } from '../../nucleo/Viewport3D.jsx';
 import LinhaDoTempo from '../../nucleo/ui/LinhaDoTempo.jsx';
 import { usarReproducao } from '../../nucleo/usarReproducao.js';
-import { CENARIOS, gerarCena } from './cenarios.js';
-import { executar } from './bytetrack.js';
-import { avaliar } from './metricas.js';
-import { PREDEFINICOES } from './parametros.js';
-import { COR_ETAPA } from './cores.js';
+import { CENARIOS, gerarCena } from './cenarios.ts';
+import { executar } from './bytetrack.ts';
+import { avaliar } from './metricas.ts';
+import { PREDEFINICOES } from './parametros.ts';
+import { COR_ETAPA } from './cores.ts';
 import Cena3D from './Cena3D.jsx';
 import { PainelConceito, PainelImpacto, PainelParametros, PainelQuadro } from './Paineis.jsx';
 

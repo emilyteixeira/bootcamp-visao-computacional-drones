@@ -1,6 +1,12 @@
 // Gerador pseudoaleatório determinístico (mulberry32).
 // A mesma semente reproduz exatamente a mesma cena: requisito para comparar parâmetros.
-export function criarRng(semente = 1) {
+export interface Rng {
+  proximo: () => number;
+  normal: () => number;
+  entre: (min: number, max: number) => number;
+}
+
+export function criarRng(semente = 1): Rng {
   let a = semente >>> 0;
   const proximo = () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -14,5 +20,5 @@ export function criarRng(semente = 1) {
     const v = proximo();
     return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
   };
-  return { proximo, normal, entre: (min, max) => min + (max - min) * proximo() };
+  return { proximo, normal, entre: (min: number, max: number) => min + (max - min) * proximo() };
 }

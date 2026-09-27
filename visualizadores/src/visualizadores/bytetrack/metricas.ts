@@ -1,18 +1,19 @@
 // Métricas simplificadas contra a verdade de solo (inspiradas em CLEAR-MOT).
 // Casamento GT × trilhas confirmadas visíveis por quadro com IoU ≥ 0,3 (tolerante a caixas pequenas e recortadas).
-import { matrizIou } from '../../nucleo/geometria.js';
-import { associarPorIou } from '../../nucleo/hungaro.js';
+import { matrizIou } from '../../nucleo/geometria.ts';
+import { associarPorIou } from '../../nucleo/hungaro.ts';
+import type { Cena, EventoLinhaDoTempo, Instantaneo, Metricas } from './tipos.ts';
 
 export const IOU_AVALIACAO = 0.3;
 
-export function avaliar(cena, resultados) {
+export function avaliar(cena: Cena, resultados: Instantaneo[]): Metricas {
   let gtTotal = 0, fn = 0, fp = 0, idsw = 0, frag = 0;
-  const ultimoId = new Map();       // gtId → último tracker_id casado
-  const estavaCoberto = new Map();  // gtId → coberto no quadro anterior?
-  const primeiroQuadro = new Map();
-  const atrasos = [];
-  const eventos = [];               // marcadores para a linha do tempo
-  const idsVistos = new Set();
+  const ultimoId = new Map<number, number>();         // gtId → último tracker_id casado
+  const estavaCoberto = new Map<number, boolean>();   // gtId → coberto no quadro anterior?
+  const primeiroQuadro = new Map<number, number>();
+  const atrasos: number[] = [];
+  const eventos: EventoLinhaDoTempo[] = [];           // marcadores para a linha do tempo
+  const idsVistos = new Set<number>();
 
   resultados.forEach((res, t) => {
     const gts = cena.verdade[t].filter((g) => g.visivel > 0.05);
@@ -22,7 +23,7 @@ export function avaliar(cena, resultados) {
     const m = associarPorIou(matrizIou(gts.map((g) => g.caixa), tracks.map((tr) => tr.caixa)), IOU_AVALIACAO, tracks.length);
     fn += m.linhasLivres.length;
     fp += m.colunasLivres.length;
-    const cobertos = new Set();
+    const cobertos = new Set<number>();
     for (const [i, j] of m.pares) {
       const g = gts[i];
       const id = tracks[j].id;
@@ -46,7 +47,7 @@ export function avaliar(cena, resultados) {
       if (!cobertos.has(g.id) && estavaCoberto.get(g.id)) estavaCoberto.set(g.id, false);
       else if (cobertos.has(g.id)) estavaCoberto.set(g.id, true);
     }
-    res.log.etapa2.filter((e) => e.id >= 0).forEach((e) => eventos.push({ quadro: t, tipo: 'etapa2', texto: `#${e.id} mantida pela etapa 2 (score ${e.score.toFixed(2)})` }));
+    res.log.etapa2.filter((e) => (e.id ?? -1) >= 0).forEach((e) => eventos.push({ quadro: t, tipo: 'etapa2', texto: `#${e.id} mantida pela etapa 2 (score ${e.score.toFixed(2)})` }));
     res.log.confirmadas.forEach((id) => eventos.push({ quadro: t, tipo: 'nova', texto: `ID #${id} confirmado` }));
   });
 

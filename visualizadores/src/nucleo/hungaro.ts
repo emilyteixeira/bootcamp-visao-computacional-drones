@@ -1,6 +1,6 @@
 // Atribuição ótima (algoritmo húngaro, O(n³)) para matrizes retangulares de custo.
 // Equivalente didático de scipy.optimize.linear_sum_assignment.
-export function atribuicaoHungara(custo) {
+export function atribuicaoHungara(custo: number[][]): [number, number][] {
   const nLin = custo.length;
   const nCol = nLin ? custo[0].length : 0;
   if (!nLin || !nCol) return [];
@@ -9,15 +9,15 @@ export function atribuicaoHungara(custo) {
   const c = Array.from({ length: n }, (_, i) =>
     Array.from({ length: n }, (_, j) => (i < nLin && j < nCol ? custo[i][j] : GRANDE)),
   );
-  const u = new Array(n + 1).fill(0);
-  const v = new Array(n + 1).fill(0);
-  const p = new Array(n + 1).fill(0);
-  const caminho = new Array(n + 1).fill(0);
+  const u = new Array<number>(n + 1).fill(0);
+  const v = new Array<number>(n + 1).fill(0);
+  const p = new Array<number>(n + 1).fill(0);
+  const caminho = new Array<number>(n + 1).fill(0);
   for (let i = 1; i <= n; i++) {
     p[0] = i;
     let j0 = 0;
-    const minv = new Array(n + 1).fill(Infinity);
-    const usado = new Array(n + 1).fill(false);
+    const minv = new Array<number>(n + 1).fill(Infinity);
+    const usado = new Array<boolean>(n + 1).fill(false);
     do {
       usado[j0] = true;
       const i0 = p[j0];
@@ -36,7 +36,7 @@ export function atribuicaoHungara(custo) {
     } while (p[j0] !== 0);
     do { const j1 = caminho[j0]; p[j0] = p[j1]; j0 = j1; } while (j0);
   }
-  const pares = [];
+  const pares: [number, number][] = [];
   for (let j = 1; j <= n; j++) {
     const i = p[j] - 1;
     if (i < nLin && j - 1 < nCol) pares.push([i, j - 1]);
@@ -47,9 +47,15 @@ export function atribuicaoHungara(custo) {
 // Associa linhas (trilhas) e colunas (detecções) exigindo IoU mínimo.
 // Retorna { pares: [[i, j, iou]], linhasLivres, colunasLivres }.
 // nCol é explícito: com zero trilhas a matriz fica vazia, mas as detecções continuam livres.
-export function associarPorIou(matriz, iouMinimo, nCol) {
+export interface Associacao {
+  pares: [number, number, number][];
+  linhasLivres: number[];
+  colunasLivres: number[];
+}
+
+export function associarPorIou(matriz: number[][], iouMinimo: number, nCol: number): Associacao {
   const nLin = matriz.length;
-  const pares = [];
+  const pares: [number, number, number][] = [];
   if (nLin && nCol) {
     const custo = matriz.map((linha) => linha.map((v) => 1 - v));
     for (const [i, j] of atribuicaoHungara(custo)) {

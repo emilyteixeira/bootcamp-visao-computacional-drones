@@ -5,25 +5,41 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { criarRastreador, quadrosMaximosPerdidos } from '../src/visualizadores/bytetrack/bytetrack.js';
+import { criarRastreador, quadrosMaximosPerdidos } from '../src/visualizadores/bytetrack/bytetrack.ts';
+import type { Caixa, Instantaneo, ParametrosByteTrack } from '../src/visualizadores/bytetrack/tipos.ts';
+
+// Formato gravado por scripts/exportar-fixtures-bytetrack.py (schemaVersion 1).
+interface QuadroFixture {
+  deteccoes: { xyxy: Caixa; confidence: number }[];
+  saida: { det: number; tracker_id: number }[];
+  trilhas: { tracker_id: number; sem_atualizar: number; consecutivas: number; xyxy: Caixa }[];
+}
+interface Fixture {
+  schemaVersion: number;
+  nome: string;
+  descricao: string;
+  parametros: ParametrosByteTrack & { maximum_frames_without_update: number };
+  quadros: QuadroFixture[];
+}
+type Par = [number, number];
 
 const PASTA = new URL('./fixtures/bytetrack/', import.meta.url);
-const ler = (nome) => JSON.parse(readFileSync(new URL(nome, PASTA), 'utf8'));
-const { fixtures } = ler('manifest.json');
+const ler = <T = Fixture>(nome: string): T => JSON.parse(readFileSync(new URL(nome, PASTA), 'utf8'));
+const { fixtures } = ler<{ fixtures: string[] }>('manifest.json');
 
-function executarJs(fx) {
+function executarJs(fx: Fixture): Instantaneo[] {
   const r = criarRastreador(fx.parametros);
   return fx.quadros.map((q, t) => r.atualizar(q.deteccoes.map((d) => ({ caixa: d.xyxy, score: d.confidence })), t));
 }
 
 // Detecções que passaram pelo filtro do detector, na ordem de entrada: tracker_id de cada uma.
-const idsJs = (inst) => inst.deteccoes.map((d) => (d.id == null ? -1 : d.id));
-const idsPython = (q) => q.saida.map((a) => a.tracker_id);
+const idsJs = (inst: Instantaneo) => inst.deteccoes.map((d) => (d.id == null ? -1 : d.id));
+const idsPython = (q: QuadroFixture) => q.saida.map((a) => a.tracker_id);
 
 // Ciclo de vida: trilhas vivas ao fim do quadro, como pares [tracker_id, quadros sem atualizar].
-const ordenar = (pares) => pares.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-const vivasJs = (inst) => ordenar(inst.trilhas.map((t) => [t.id, t.semAtualizar]));
-const vivasPython = (q) => ordenar(q.trilhas.map((t) => [t.tracker_id, t.sem_atualizar]));
+const ordenar = (pares: Par[]) => pares.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+const vivasJs = (inst: Instantaneo) => ordenar(inst.trilhas.map((t): Par => [t.id, t.semAtualizar]));
+const vivasPython = (q: QuadroFixture) => ordenar(q.trilhas.map((t): Par => [t.tracker_id, t.sem_atualizar]));
 
 for (const nome of fixtures) {
   const fx = ler(`${nome}.json`);
