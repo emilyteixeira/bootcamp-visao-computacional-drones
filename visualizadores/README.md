@@ -25,7 +25,7 @@ npm install
 npm run dev          # http://localhost:5173/#bytetrack (laboratório) e #curso-bytetrack (Aula 1)
 npm run typecheck    # tsc strict (TypeScript 7)
 npm test             # testes da lógica (tsx + node:test), incluindo fixtures do trackers 2.6.1
-npm run test:visual  # testes visuais Playwright (6 cenários, referências em tests/visual/referencias/)
+npm run test:visual  # testes visuais Playwright (10 cenários: laboratório e Aula 1, referências em tests/visual/referencias/)
 npm run build:pages  # dist/ com base /bootcamp-visao-computacional-drones/ (GitHub Pages)
 npm run build        # dist/ (vários arquivos, para hospedagem estática)
 npm run build:link   # dist-link/laboratorio-bytetrack.html (arquivo único, para publicar)
