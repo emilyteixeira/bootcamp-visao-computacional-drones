@@ -162,7 +162,7 @@ Histórico: [docs/historico/2026-09-27-sessao-alinhamento-motor.md](docs/histori
 
 ## 11. Etapa 1 — migração TypeScript — 27/09/2026
 
-- Commits: `a64ad9a` (1a: lógica em `.ts`, `tipos.ts`, tsconfig, tsx) e o commit 1b (componentes `.tsx`, `registro.ts`, `usarReproducao.ts`, `main.tsx`; `allowJs` removido).
+- Commits: `a64ad9a` (1a: lógica em `.ts`, `tipos.ts`, tsconfig, tsx) e `d276187` (1b: componentes `.tsx`, `registro.ts`, `usarReproducao.ts`, `main.tsx`; `allowJs` removido).
 - Contratos em `src/visualizadores/bytetrack/tipos.ts`: `ParametrosByteTrack`, `Deteccao`, `TrackSnapshot`, `LogQuadro`, `Instantaneo`, `Cenario`, `Cena`, `Metricas`, `Camadas`.
 - Única mudança interna: `atualizar()` copia as detecções de entrada em vez de mutá-las (sem efeito observável; `executar` já passava cópias).
 - Verificação: typecheck 0 erros; 26/26; build e build:link (1.680 KiB); 6/6 visuais **sem atualizar referências**; calibração do §5 idêntica antes/depois.

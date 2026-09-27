@@ -21,5 +21,5 @@ Seguir as três sugestões da etapa 0: alinhar D1, D3, D4 e D5 ao `trackers` 2.6
 ## Etapa 1 — TypeScript
 
 1. Commit 1a (`a64ad9a`): lógica pura em `.ts` strict, `tipos.ts`, tsconfig, testes com tsx, typecheck na CI.
-2. Commit 1b: componentes React em `.tsx`, `allowJs` removido, README atualizado.
+2. Commit 1b (`d276187`): componentes React em `.tsx`, `allowJs` removido, README atualizado.
 3. Verificado: typecheck 0 erros, 26/26, builds ok, 6/6 visuais sem alterar referências, calibração idêntica.
