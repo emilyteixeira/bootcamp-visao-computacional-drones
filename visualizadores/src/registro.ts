@@ -35,6 +35,13 @@ export const VISUALIZADORES: EntradaRegistro[] = [
     Componente: lazy(() => import('./visualizadores/bytetrack/ByteTrackVisualizador.tsx')),
   },
   {
+    id: 'curso-bytetrack',
+    titulo: 'Aula 1',
+    subtitulo: 'Aula guiada: ByteTrack e Supervision em 7 capítulos',
+    status: 'pronto',
+    Componente: lazy(() => import('./curso/CursoByteTrack.tsx')),
+  },
+  {
     id: 'iou-nms',
     titulo: 'IoU e NMS',
     subtitulo: 'Sobreposição de caixas e supressão de não máximos',

@@ -1,0 +1,613 @@
+// Aula 1 — ByteTrack e Supervision. Roteiro do plano §5, com público do plano §1:
+// quem já entende caixas, classes e confiança, mas está começando em tracking.
+// Todos os números citados foram medidos no motor alinhado ao trackers 2.6.1 (27/09/2026);
+// se o motor, as cenas ou as predefinições mudarem, os testes de tests/curso.test.ts avisam.
+import type { Aula } from '../tipos.ts';
+
+export const AULA_01: Aula = {
+  id: 'aula-01-bytetrack',
+  versaoConteudo: '2026-09-27.1',
+  titulo: 'Como manter a identidade quando a detecção falha?',
+  publico: 'Para quem já entende caixas, classes e confiança de um detector e está começando em rastreamento de objetos.',
+  abertura: 'O carro não desapareceu do mundo. Por que desapareceu do rastreamento?',
+  capitulos: [
+    // ─────────────────────────────────────────────────────────────── 1
+    {
+      id: 'mesmo-carro',
+      numero: 1,
+      titulo: 'O mesmo carro?',
+      duracaoMin: 5,
+      objetivo: 'Distinguir detecção, associação temporal e contagem.',
+      evidencia: 'Explicar por que a classe "car" não diz qual carro é qual.',
+      passos: [
+        {
+          id: 'c1-observar',
+          fase: 'observar',
+          titulo: 'Um quadro visto do drone',
+          texto: [
+            'Este é o quadro 60 de uma rodovia sintética vista de cima. Os blocos cinza são os veículos reais; os retângulos brancos são as caixas que o detector entregou neste quadro.',
+            'Cada caixa responde a uma pergunta: **o que há aqui?** Ela traz a posição (`xyxy`), a categoria (`class_id`) e um score (`confidence`). Nenhum desses campos diz **qual** carro é. Os quatro veículos são da mesma classe.',
+            'Repare também na caixa pequena e isolada na pista: é um falso positivo do detector, com score baixo. Ele também é um "car" para o detector.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 60, vista: 'topo', camadas: { verdade: true, deteccoes: true, trilhas: false, scores: true } },
+          fontes: ['pdf-identidade', 'nb02'],
+        },
+        {
+          id: 'c1-prever',
+          fase: 'prever',
+          titulo: 'Quem é quem no quadro seguinte?',
+          texto: [
+            'Avance mentalmente um quadro (1/30 s). O detector roda de novo, do zero, e devolve uma nova lista de caixas. A ordem da lista pode mudar de um quadro para outro, porque o detector não tem memória.',
+            'Antes de revelar a resposta, pense em como você ligaria cada caixa do quadro 61 a uma caixa do quadro 60.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 61, vista: 'topo', camadas: { verdade: true, deteccoes: true, trilhas: false, scores: true } },
+          questao: {
+            id: 'q-c1-criterio',
+            enunciado: 'Qual critério permite dizer que uma caixa do quadro 61 é o mesmo carro que uma caixa do quadro 60?',
+            opcoes: [
+              { texto: 'A mesma posição na lista de detecções.', correta: false, feedback: 'A ordem da lista é arbitrária e muda entre quadros. O notebook 02 (célula 11) avisa: a posição na lista não identifica o veículo.' },
+              { texto: 'A mesma classe ("car").', correta: false, feedback: 'Todos os veículos desta cena têm a mesma classe. Classe responde "o que é", não "qual é".' },
+              { texto: 'A caixa que fica onde esperamos encontrar aquele carro, dado o movimento que ele vinha fazendo.', correta: true, feedback: 'Isso: continuidade espacial e temporal. É exatamente a hipótese que um rastreador formaliza com previsão de movimento e sobreposição (IoU).' },
+              { texto: 'A caixa com o score mais parecido.', correta: false, feedback: 'O score varia com oclusão e ângulo. O carro sob a árvore cai de 0,34 no quadro 60 para 0,23 no quadro 61 e continua sendo o mesmo carro.' },
+            ],
+          },
+          fontes: ['nb02'],
+        },
+        {
+          id: 'c1-explicar',
+          fase: 'explicar',
+          titulo: 'Três perguntas diferentes',
+          texto: [
+            'Agora as trilhas estão visíveis: cada cor e cada `#número` é um `tracker_id`, a hipótese do rastreador de que aquelas caixas pertencem ao mesmo objeto.',
+            'Um sistema de vídeo responde a três perguntas separadas: **detecção** (o que há em cada quadro?), **associação temporal** (é o mesmo objeto de antes?) e **contagem ou evento** (ele cruzou uma linha, entrou numa zona?). Cada uma depende da anterior, e cada uma erra de um jeito próprio.',
+            'O `tracker_id` é local a uma execução: rodar o vídeo de novo, ou mudar um parâmetro, pode gerar outros números. Ele também não é reconhecimento: o rastreador desta aula não olha a aparência do carro, só geometria e movimento.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 61, vista: 'topo', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: false } },
+          fontes: ['nb02', 'nb03'],
+        },
+        {
+          id: 'c1-conferir',
+          fase: 'conferir',
+          titulo: 'Quantos carros passaram?',
+          texto: [
+            'Este é o quadro 200. Com os parâmetros do notebook 02, o clipe inteiro emite 7 IDs confirmados. A cena tem 5 veículos reais.',
+            'Procure o veículo que atravessa o viaduto da direita para a esquerda: antes dele o ID era `#3`; depois, `#5`.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 200, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          mostrarResumo: true,
+          questao: {
+            id: 'q-c1-contagem',
+            enunciado: 'O clipe terminou com 7 IDs confirmados. Isso significa que passaram 7 veículos únicos?',
+            opcoes: [
+              { texto: 'Sim: cada ID confirmado corresponde a um veículo.', correta: false, feedback: 'Não. Aqui há 5 veículos reais e 7 IDs. Quando a associação falha, o mesmo veículo recebe um novo ID (fragmentação).' },
+              { texto: 'Não: fragmentação pode dar vários IDs ao mesmo veículo, e uma troca pode passar um ID de um veículo para outro.', correta: true, feedback: 'Isso. O notebook 03 (célula 42) separa três quantidades: objetos no quadro, IDs distintos e cruzamentos. IDs distintos não estimam veículos únicos automaticamente.' },
+              { texto: 'Não: o número real é sempre menor que o de IDs.', correta: false, feedback: 'Não existe essa regra. Um veículo nunca detectado não gera ID nenhum, e o total de IDs pode ficar abaixo do real.' },
+            ],
+          },
+          fontes: ['nb03'],
+        },
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────── 2
+    {
+      id: 'detections',
+      numero: 2,
+      titulo: 'Do detector ao Detections',
+      duracaoMin: 8,
+      objetivo: 'Reconhecer os campos de sv.Detections e o efeito de filtrar caixas cedo demais.',
+      evidencia: 'Indicar qual informação se perde quando o filtro do detector é alto.',
+      passos: [
+        {
+          id: 'c2-observar',
+          fase: 'observar',
+          titulo: 'Cada linha é uma instância',
+          texto: [
+            'A tabela abaixo lista as detecções do quadro 61 que chegaram ao rastreador. No Python, elas vivem num objeto `sv.Detections`: arrays alinhados em que a linha *i* de `xyxy`, `confidence` e `class_id` descreve a mesma caixa.',
+            'Filtrar um `sv.Detections` com uma máscara booleana preserva esse alinhamento (notebook 01, célula 22). Antes do rastreamento, `tracker_id` é `None`; depois de `tracker.update(...)`, cada linha ganha um inteiro.',
+            'A cena simulada tem uma única classe (veículo). Nos notebooks, `class_id` e `data["class_name"]` vêm do checkpoint do detector.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 61, vista: 'topo', camadas: { deteccoes: true, scores: true, trilhas: false, verdade: true } },
+          mostrarDeteccoes: true,
+          codigo: [
+            {
+              origem: 'projeto-3/02_tracking.ipynb, célula 17',
+              codigo: 'def detectar(quadro):\n    rgb = cv2.cvtColor(quadro, cv2.COLOR_BGR2RGB)\n    deteccoes = modelo.predict(rgb, threshold=LIMIAR_DETECTOR,\n                               include_source_image=False)\n    selecionadas = np.isin(deteccoes["class_name"], classes_veiculos)\n    return deteccoes[selecionadas]',
+            },
+          ],
+          fontes: ['nb01', 'nb02', 'sv-detections', 'pdf-supervision'],
+        },
+        {
+          id: 'c2-explicar',
+          fase: 'explicar',
+          titulo: 'Score não é certeza',
+          texto: [
+            'No quadro 61 há duas caixas com score baixo: **0,23** e **0,18**. A de 0,23 é o carro parcialmente escondido pela copa da árvore. A de 0,18 é um falso positivo solto na pista.',
+            'O score é uma pontuação do modelo, não uma probabilidade calibrada de que o objeto exista. Um carro real meio escondido pode ter score menor que um falso positivo. Por isso o score sozinho não decide nada: o ByteTrack combina o score com **a existência de uma trilha compatível** naquele lugar.',
+            'Dois cuidados que as anotações da aula misturam: os campos corretos são `confidence` e `class_id` (não `score` e `classes`); e a conversão BGR → RGB precisa ser explícita. O OpenCV lê quadros em BGR; o RF-DETR espera RGB (notebook 01, células 3 e 15).',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 61, vista: 'topo', camadas: { deteccoes: true, scores: true, trilhas: true, verdade: true } },
+          mostrarDeteccoes: true,
+          fontes: ['nb01', 'pdf-supervision'],
+        },
+        {
+          id: 'c2-manipular',
+          fase: 'manipular',
+          titulo: 'Suba o filtro do detector',
+          texto: [
+            'O notebook 02 usa `LIMIAR_DETECTOR = 0.10` de propósito: bem abaixo do limiar que separa as duas etapas do ByteTrack (0,25).',
+            'Mova o controle **Limiar do detector** para 0,25 e observe o quadro 63. O carro sob a árvore (score 0,19) vira um retângulo vermelho tracejado: foi descartado **antes** do rastreador. Para o ByteTrack, ele nunca existiu.',
+            'Veja também o resumo do clipe: com 0,10 são 7 IDs e 89,1% de cobertura; com 0,25 são 8 IDs e 81,9%. Volte para 0,10 antes de seguir.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 63, vista: 'topo', camadas: { deteccoes: true, scores: true, trilhas: true, descartadas: true, verdade: true } },
+          parametroLivre: 'limiar_detector',
+          mostrarResumo: true,
+          fontes: ['nb02'],
+        },
+        {
+          id: 'c2-conferir',
+          fase: 'conferir',
+          titulo: 'Filtrar cedo tem custo',
+          texto: ['Responda com base no que você acabou de ver no quadro 63.'],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 63, vista: 'topo', camadas: { deteccoes: true, scores: true, trilhas: true, descartadas: true, verdade: true } },
+          questao: {
+            id: 'q-c2-baixa',
+            enunciado: 'Uma detecção de score 0,18 deve sempre ser descartada?',
+            opcoes: [
+              { texto: 'Sim: abaixo de 0,25 é ruído.', correta: false, feedback: 'Não. No quadro 63, a caixa de 0,19 é um carro real sob a árvore, e é ela que mantém o ID #2.' },
+              { texto: 'Não: se passar pelo filtro do detector, ela pode confirmar uma trilha existente compatível; sozinha, não cria trilha nenhuma.', correta: true, feedback: 'Isso. O valor dela depende do filtro de entrada e de haver uma trilha prevista naquele lugar. O capítulo 4 detalha esse mecanismo.' },
+              { texto: 'Não: toda detecção deve virar uma trilha nova.', correta: false, feedback: 'Não. Caixas baixas sem par são ignoradas. Se toda caixa fraca abrisse trilha, cada falso positivo viraria um ID.' },
+            ],
+          },
+          fontes: ['nb02', 'bytetrack'],
+        },
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────── 3
+    {
+      id: 'prever',
+      numero: 3,
+      titulo: 'Prever antes de associar',
+      duracaoMin: 7,
+      objetivo: 'Separar previsão de observação.',
+      evidencia: 'Explicar por que a comparação é feita com a caixa prevista, e não com a última caixa vista.',
+      aprofundamento: ['deepsort'],
+      passos: [
+        {
+          id: 'c3-observar',
+          fase: 'observar',
+          titulo: 'Um carro sob o viaduto',
+          texto: [
+            'Quadro 95. O viaduto está em modo raio-X para você ver o que o drone não vê. O veículo que vai para a esquerda está totalmente coberto: não há detecção dele há vários quadros.',
+            'Mesmo assim, a trilha `#1` continua na cena, tracejada e marcada como **perdida 17/30**. A caixa tracejada é a **previsão** do filtro de Kalman: onde o carro deveria estar se mantivesse a velocidade.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 95, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          fontes: ['pdf-kalman', 'sort'],
+        },
+        {
+          id: 'c3-prever',
+          fase: 'prever',
+          titulo: 'Onde procurar?',
+          texto: ['Antes de avançar a linha do tempo, responda.'],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 95, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          questao: {
+            id: 'q-c3-previsao',
+            enunciado: 'Quando o carro voltar a aparecer, com qual caixa o rastreador compara a nova detecção?',
+            opcoes: [
+              { texto: 'Com a última caixa observada, antes do viaduto.', correta: false, feedback: 'Não. Depois de ~27 quadros o carro já andou mais de 100 px; a última caixa observada nem se sobreporia à nova detecção.' },
+              { texto: 'Com a caixa prevista pelo modelo de movimento naquele quadro.', correta: true, feedback: 'Isso. A cada quadro o Kalman avança a trilha e a associação mede a sobreposição (IoU) entre a caixa prevista e cada detecção.' },
+              { texto: 'Com qualquer caixa da imagem, escolhendo a de maior score.', correta: false, feedback: 'Não. Sem sobreposição mínima (IoU ≥ 0,10 aqui) o par é recusado, qualquer que seja o score.' },
+            ],
+          },
+          fontes: ['sort'],
+        },
+        {
+          id: 'c3-explicar',
+          fase: 'explicar',
+          titulo: 'Previsão, IoU e atribuição',
+          texto: [
+            'O esquema vem do SORT (2016): um filtro de Kalman de velocidade constante prevê cada trilha; depois, uma matriz de IoU entre caixas previstas e detecções entra num algoritmo de atribuição (húngaro) que escolhe o conjunto de pares de maior sobreposição total. Pares abaixo de `minimum_iou_threshold` são descartados depois da atribuição.',
+            'IoU = área da interseção ÷ área da união. Duas caixas idênticas dão 1; caixas separadas dão 0. No painel **Etapas do quadro**, abaixo deste texto, cada par aparece com seu IoU.',
+            'Neste quadro (106) o carro sai de baixo do viaduto. A previsão ainda se sobrepõe à caixa detectada, com IoU **0,12**, pouco acima do mínimo de 0,10, e a trilha `#1` é **reencontrada** com o mesmo ID. Volte alguns quadros na linha do tempo para ver a previsão atravessando o viaduto.',
+            '**Limite desta simulação:** o Kalman do laboratório congela o tamanho da caixa enquanto a trilha está perdida. O `trackers` 2.6.1 usa outro estado (cantos da caixa) e deixa a caixa prevista encolher; nesta mesma cena, no Python, a sobreposição cai a zero e o carro recebe um ID novo. A qualidade da previsão decide se a associação é possível.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 106, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          mostrarEtapas: true,
+          fontes: ['sort', 'pdf-kalman', 'trackers-src'],
+        },
+        {
+          id: 'c3-manipular',
+          fase: 'manipular',
+          titulo: 'Exija mais sobreposição',
+          texto: [
+            'Mova **IoU mínimo** de 0,10 para 0,30 e depois 0,50, olhando o resumo do clipe. Nesta cena, os IDs sobem de 7 para 9 e as trocas de 2 para 4: previsões um pouco deslocadas deixam de casar e o mesmo carro ganha ID novo.',
+            'Um limiar baixo tolera caixas instáveis e objetos rápidos; em cenas densas, porém, uma trilha pode "roubar" a caixa do vizinho. Volte para 0,10 antes de seguir.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 106, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          parametroLivre: 'minimum_iou_threshold',
+          mostrarResumo: true,
+          fontes: ['nb02', 'trackers-doc'],
+        },
+        {
+          id: 'c3-conferir',
+          fase: 'conferir',
+          titulo: 'Só geometria',
+          texto: ['Pense no que o rastreador usa e no que ele ignora.'],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 106, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          questao: {
+            id: 'q-c3-aparencia',
+            enunciado: 'Dois carros idênticos trocam de faixa um atrás do outro dentro de uma oclusão. O que o ByteTrack desta aula usa para decidir quem é quem quando eles reaparecem?',
+            opcoes: [
+              { texto: 'A cor e o formato de cada carro.', correta: false, feedback: 'Não. Esta implementação não extrai descritores de aparência (notebook 02, célula 20). O Deep SORT acrescenta uma métrica de aparência justamente para esses casos.' },
+              { texto: 'Apenas a posição prevista pelo movimento e a sobreposição com as novas caixas.', correta: true, feedback: 'Isso. Por isso trocas de ID em cruzamentos ambíguos continuam possíveis, mesmo com parâmetros bem escolhidos.' },
+              { texto: 'O score de cada detecção.', correta: false, feedback: 'O score só decide a etapa (alta ou baixa) e o nascimento; não diferencia um carro de outro.' },
+            ],
+          },
+          fontes: ['nb02', 'deepsort'],
+        },
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────── 4
+    {
+      id: 'duas-etapas',
+      numero: 4,
+      titulo: 'Por que duas etapas?',
+      duracaoMin: 12,
+      objetivo: 'Explicar como uma caixa fraca mantém uma trilha existente e por que não inicia outra.',
+      evidencia: 'Descrever as duas associações do BYTE e o destino de cada tipo de caixa.',
+      passos: [
+        {
+          id: 'c4-observar',
+          fase: 'observar',
+          titulo: 'A copa da árvore derruba o score',
+          texto: [
+            'Quadro 67. O carro `#2` passa sob a copa da árvore e o detector o vê só em parte: score **0,13**. Ele está acima do filtro do detector (0,10), mas abaixo do limiar de alta confiança (0,25).',
+            'A caixa dele é laranja tracejada: foi associada na **etapa 2**. Veja no painel de etapas abaixo: `#2 ← score 0,13`, marcada como reencontrada, porque no quadro anterior a trilha ficou sem par.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 67, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true } },
+          mostrarEtapas: true,
+          fontes: ['bytetrack', 'pdf-byte'],
+        },
+        {
+          id: 'c4-explicar',
+          fase: 'explicar',
+          titulo: 'O algoritmo BYTE',
+          texto: [
+            'O ByteTrack parte de uma observação simples: descartar caixas de baixo score joga fora objetos reais parcialmente ocluídos. A proposta é **associar todas as caixas**, mas em duas etapas, dentro do mesmo quadro:',
+            '**1.** Separar as detecções em ALTAS (`confidence ≥ high_conf_det_threshold`, 0,25 aqui) e BAIXAS.',
+            '**2. Etapa 1:** todas as trilhas × detecções ALTAS, por IoU com a caixa prevista.',
+            '**3. Etapa 2:** as trilhas que sobraram da etapa 1 × detecções BAIXAS. No `trackers` 2.6.1, usado nos notebooks, entram aqui todas as trilhas livres: ativas, perdidas e tentativas. Outras implementações podem restringir esse conjunto.',
+            '**4.** Detecções BAIXAS sem par são ignoradas. Detecções ALTAS sem par, com score ≥ `track_activation_threshold` (0,35), abrem uma trilha nova.',
+            'A regra central: **evidência fraca pode manter uma hipótese que já existe, mas não cria uma nova.**',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 67, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true } },
+          mostrarEtapas: true,
+          codigo: [
+            {
+              origem: 'projeto-3/02_tracking.ipynb, célula 22',
+              codigo: 'from trackers import ByteTrackTracker\ndef criar_rastreador():\n    return ByteTrackTracker(frame_rate=info.fps,\n        high_conf_det_threshold=0.25, track_activation_threshold=0.35,\n        minimum_consecutive_frames=2, minimum_iou_threshold=0.10,\n        lost_track_buffer=30)',
+            },
+          ],
+          fontes: ['bytetrack', 'trackers-src', 'nb02'],
+        },
+        {
+          id: 'c4-prever',
+          fase: 'prever',
+          titulo: 'O carro sai do viaduto',
+          texto: [
+            'Quadro 106. O veículo que estava sob o viaduto (trilha `#1`, perdida há 27 quadros) começa a reaparecer. Só uma parte dele é visível, e o detector devolve uma caixa com score **0,17**.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 106, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true, raioX: true } },
+          questao: {
+            id: 'q-c4-saida',
+            enunciado: 'O que acontece com a caixa de score 0,17 no quadro 106?',
+            opcoes: [
+              { texto: 'Abre uma trilha nova, porque não há trilha ativa ali.', correta: false, feedback: 'Não. Caixas baixas nunca abrem trilha, e a trilha #1 ainda existe como perdida.' },
+              { texto: 'É ignorada, porque está abaixo de 0,25.', correta: false, feedback: 'Não. 0,25 separa as etapas; o filtro de entrada é 0,10. Ela entra na etapa 2.' },
+              { texto: 'É associada à trilha perdida #1 na etapa 2, e o carro mantém o ID.', correta: true, feedback: 'Isso. A previsão de #1 ainda se sobrepõe à caixa, e a etapa 2 recupera a trilha com uma caixa fraca. Confira no painel de etapas abaixo.' },
+              { texto: 'Recebe tracker_id −1 e vira uma tentativa.', correta: false, feedback: 'Não. Tentativas nascem só de caixas altas sem par.' },
+            ],
+          },
+          mostrarEtapas: true,
+          fontes: ['bytetrack', 'trackers-src'],
+        },
+        {
+          id: 'c4-manipular',
+          fase: 'manipular',
+          titulo: 'Tire a etapa 2 do jogo',
+          texto: [
+            'Suba o **Limiar do detector** para 0,25. Agora nenhuma caixa baixa chega ao rastreador e a etapa 2 fica vazia: é o que acontece quando se filtra "por segurança" antes do tracker.',
+            'Vá ao quadro 110: o mesmo veículo reaparece com outro ID (`#5` em vez de `#1`). No resumo do clipe: 7 → 8 IDs, 2 → 3 trocas e cobertura 89,1% → 81,9%.',
+            'O notebook 03 usa a mesma ideia com valores diferentes: detector em 0,30 e alta confiança em 0,60, para que a faixa 0,30–0,60 ainda possa recuperar trilhas (célula 20).',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 110, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true, raioX: true, descartadas: true } },
+          parametroLivre: 'limiar_detector',
+          mostrarResumo: true,
+          fontes: ['nb02', 'nb03'],
+        },
+        {
+          id: 'c4-conferir',
+          fase: 'conferir',
+          titulo: 'Manter não é criar',
+          texto: ['Volte o filtro para 0,10 e responda.'],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 67, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true } },
+          questao: {
+            id: 'q-c4-regra',
+            enunciado: 'Por que uma caixa de score 0,18 pode manter uma trilha, mas não pode iniciar uma?',
+            opcoes: [
+              { texto: 'Porque, sozinha, uma caixa fraca é tão compatível com um falso positivo quanto com um objeto; junto de uma trilha prevista no mesmo lugar, ela vira evidência de continuidade.', correta: true, feedback: 'Isso. Nesta cena os falsos positivos têm score entre 0,05 e 0,30: a mesma faixa de um carro sob a árvore. O que os distingue é a trilha prevista.' },
+              { texto: 'Porque caixas fracas têm IoU menor.', correta: false, feedback: 'Não. O IoU mede sobreposição geométrica e não depende do score.' },
+              { texto: 'Porque o Kalman rejeita caixas abaixo de 0,25.', correta: false, feedback: 'Não. O Kalman não filtra por score; a separação por score acontece antes da associação.' },
+            ],
+          },
+          fontes: ['bytetrack'],
+        },
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────── 5
+    {
+      id: 'ciclo-de-vida',
+      numero: 5,
+      titulo: 'Nascer, confirmar, perder, remover',
+      duracaoMin: 8,
+      objetivo: 'Explicar o ID −1, a confirmação e a expiração de uma trilha.',
+      evidencia: 'Distinguir confirmação inicial de sobrevivência no buffer.',
+      passos: [
+        {
+          id: 'c5-nascer',
+          fase: 'observar',
+          titulo: 'Tentativas',
+          texto: [
+            'Quadro 1. Os dois primeiros carros entram na imagem e o detector os vê com score 0,70 e 0,93: caixas altas sem trilha nenhuma para associar. Cada uma abre uma **tentativa**.',
+            'Uma tentativa já é atualizada pelo Kalman, mas sai do `update()` com `tracker_id = −1`. O notebook 02 filtra essas linhas antes de desenhar (`retorno.tracker_id != -1`, célula 28). O `−1` significa "sem ID confirmado", não um ID compartilhado.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 1, vista: 'topo', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true } },
+          mostrarEtapas: true,
+          fontes: ['nb02', 'pdf-ciclo'],
+        },
+        {
+          id: 'c5-confirmar',
+          fase: 'explicar',
+          titulo: 'Confirmação',
+          texto: [
+            'Quadro 2. As duas tentativas encontraram par de novo e foram confirmadas: `#0` e `#1`. **O ID 0 é válido**; não o descarte com um teste do tipo `if tracker_id:`.',
+            '`minimum_consecutive_frames = 2` exige dois quadros seguidos com par. O nascimento conta como o primeiro, mas o ID nunca é emitido no próprio nascimento: com 1 ou 2 o ID aparece no 2º quadro; com 3, no 3º. Se a tentativa perder um quadro antes de confirmar, é removida.',
+            '"Dois quadros" é a configuração dos notebooks, não uma regra universal. Subir o valor filtra falsos positivos curtos, ao custo de atrasar o primeiro ID.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 2, vista: 'topo', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true } },
+          mostrarEtapas: true,
+          fontes: ['trackers-doc', 'trackers-src', 'nb02'],
+        },
+        {
+          id: 'c5-perder',
+          fase: 'observar',
+          titulo: 'Perdida, mas viva',
+          texto: [
+            'Quadro 175. O veículo mais lento (3,6 px por quadro) está sob o viaduto. Sua trilha `#3` está **perdida 21/30**: sobrevive só com a previsão, à espera de uma detecção compatível.',
+            'O limite vem de `lost_track_buffer = 30`, medido em quadros de um vídeo de 30 FPS. O rastreador converte pelo `frame_rate` informado: `max(1, ⌈frame_rate / 30 × buffer⌉)` quadros, aqui 30 (≈ 1 s).',
+            'O `frame_rate` do rastreador não configura a câmera nem a velocidade de reprodução: ele só faz essa conversão. Informar um FPS errado muda a tolerância em segundos.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 175, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          fontes: ['trackers-doc', 'pdf-ciclo'],
+        },
+        {
+          id: 'c5-prever',
+          fase: 'prever',
+          titulo: 'O buffer acaba antes do viaduto',
+          texto: ['A trilha `#3` teve o último par no quadro 154 e está sem detecção desde então. O carro só volta a ser detectado perto do quadro 200.'],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 185, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          questao: {
+            id: 'q-c5-remocao',
+            enunciado: 'O que acontece com a trilha #3 e com o carro quando ele reaparece?',
+            opcoes: [
+              { texto: 'A trilha é removida ao passar de 30 quadros sem par; quando o carro reaparece, recebe um ID novo.', correta: true, feedback: 'Isso. No quadro 185 a trilha #3 é removida; no quadro 200 o mesmo veículo vira #5. Avance a linha do tempo para conferir.' },
+              { texto: 'A trilha espera indefinidamente, porque o carro ainda está na cena.', correta: false, feedback: 'Não. O rastreador não sabe que o carro está lá; ele só conta quadros sem par.' },
+              { texto: 'A trilha é removida, mas o carro recupera o ID #3 porque a posição bate.', correta: false, feedback: 'Não. Uma trilha removida não participa mais da associação; o ID #3 não volta.' },
+            ],
+          },
+          fontes: ['trackers-src'],
+        },
+        {
+          id: 'c5-manipular',
+          fase: 'manipular',
+          titulo: 'Aumente o buffer',
+          texto: [
+            'Mova **Buffer de perda** para 60 e vá ao quadro 200: o veículo mantém `#3`. No resumo do clipe: 7 → 5 IDs e 2 → 0 trocas. Com 5, o resultado piora: 9 IDs e 4 trocas.',
+            'O custo: trilhas-fantasma vivem mais tempo, e uma trilha antiga pode ser reassociada a **outro** objeto que apareça no lugar previsto (notebook 02, célula 39).',
+            '**Limite desta simulação:** no `trackers` 2.6.1 esta cena dá 9 IDs com buffer 5, 30 ou 60, porque a caixa prevista encolhe durante a oclusão e deixa de se sobrepor ao carro. O buffer só ajuda enquanto a previsão ainda consegue casar com a detecção.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 200, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          parametroLivre: 'lost_track_buffer',
+          mostrarResumo: true,
+          fontes: ['nb02', 'trackers-src'],
+        },
+        {
+          id: 'c5-conferir',
+          fase: 'conferir',
+          titulo: 'Buffer não é garantia',
+          texto: ['Volte o buffer para 30 e responda.'],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 200, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          questao: {
+            id: 'q-c5-buffer',
+            enunciado: 'Aumentar o lost_track_buffer garante que o carro mantenha o mesmo ID depois de uma oclusão?',
+            opcoes: [
+              { texto: 'Sim, desde que a oclusão seja menor que o buffer.', correta: false, feedback: 'Não. O buffer mantém a trilha viva, mas a associação ainda depende da previsão se sobrepor à nova caixa e de não haver outro objeto mais compatível.' },
+              { texto: 'Não: ele preserva candidatas por mais tempo, mas não resolve previsões ruins nem ambiguidades, e pode aumentar reassociações erradas.', correta: true, feedback: 'Isso. Confirmação (quantos quadros para ganhar ID) e buffer (quantos quadros sobreviver sem par) são controles diferentes, com custos diferentes.' },
+              { texto: 'Sim, se o frame_rate estiver correto.', correta: false, feedback: 'O frame_rate correto só garante que o buffer tenha a duração pretendida em segundos.' },
+            ],
+          },
+          fontes: ['trackers-doc', 'nb02'],
+        },
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────── 6
+    {
+      id: 'supervision',
+      numero: 6,
+      titulo: 'Supervision na prática',
+      duracaoMin: 10,
+      objetivo: 'Reconstruir o fluxo detector → Detections → tracker → anotadores.',
+      evidencia: 'Dizer qual biblioteca é responsável por cada etapa do código.',
+      passos: [
+        {
+          id: 'c6-fluxo',
+          fase: 'explicar',
+          titulo: 'Quem faz o quê',
+          texto: [
+            'No código dos notebooks há duas bibliotecas com papéis diferentes:',
+            '**Supervision** (`supervision==0.30.5`, `sv`) padroniza e manipula os resultados (`sv.Detections`, máscaras, conversões de caixa, âncoras, zonas) e desenha (`BoxAnnotator`, `LabelAnnotator`, `TraceAnnotator`).',
+            '**Trackers** (`trackers==2.6.1`) faz a associação temporal: `ByteTrackTracker.update(deteccoes)` recebe um `sv.Detections` e devolve outro, com `tracker_id` preenchido. O antigo `sv.ByteTrack` foi depreciado no Supervision 0.28.0, com remoção prevista para 0.31.0.',
+            'A ordem por quadro é sempre: detectar → atualizar o rastreador → filtrar `tracker_id != -1` → anotar. O rastreador deve ser atualizado **mesmo quando não há detecções**, para o relógio de perda avançar (notebook 02, célula 29).',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 120, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true } },
+          codigo: [
+            {
+              origem: 'projeto-3/02_tracking.ipynb, célula 28',
+              codigo: 'def processar(quadro, indice, rastreador, rastros, registros):\n    deteccoes = detectar(quadro)\n    retorno = rastreador.update(deteccoes)\n    confirmadas = retorno[retorno.tracker_id != -1]\n    ...\n    return anotar(quadro, confirmadas, rastros)',
+            },
+          ],
+          fontes: ['nb02', 'sv-migracao', 'pdf-byte'],
+        },
+        {
+          id: 'c6-adaptadores',
+          fase: 'explicar',
+          titulo: 'Adaptadores e cores',
+          texto: [
+            'O adaptador depende do **objeto retornado pela biblioteca**, não do nome do modelo: `RFDETRMedium.predict(...)` já devolve `sv.Detections`; um resultado do Ultralytics precisa de `sv.Detections.from_ultralytics(resultado)` (notebook 03, célula 22).',
+            'Cada biblioteca declara sua convenção de cores: o OpenCV entrega quadros em BGR; o notebook converte para RGB antes do RF-DETR. Não suponha conversão automática.',
+            'Nos anotadores, `color_lookup=sv.ColorLookup.TRACK` pinta pela identidade, como as cores das trilhas aqui. A paleta tem cores finitas e as repete; o rótulo `#id` continua necessário.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 120, vista: 'topo', camadas: { verdade: false, deteccoes: false, trilhas: true } },
+          codigo: [
+            {
+              origem: 'projeto-3/03_projeto_final.ipynb, célula 22',
+              codigo: 'resultado = modelo.predict(frame, conf=CONF_DETECTOR, iou=0.50,\n                            imgsz=640, device=DISPOSITIVO, verbose=False)[0]\ndeteccoes = sv.Detections.from_ultralytics(resultado)',
+            },
+          ],
+          fontes: ['nb01', 'nb03', 'sv-detections'],
+        },
+        {
+          id: 'c6-mapa',
+          fase: 'observar',
+          titulo: 'Do laboratório ao notebook',
+          texto: [
+            'Cada camada da cena 3D corresponde a um objeto do código: as caixas brancas e laranja são as linhas do `sv.Detections` que entram no `update()`; os rótulos coloridos são as linhas de saída com `tracker_id ≥ 0`; o modo espaço-tempo equivale ao `TraceAnnotator`, que desenha o histórico do centro de cada ID.',
+            'Ligue **Espaço-tempo** nas camadas abaixo da cena e gire a câmera: cada trajetória sobe no eixo do tempo. Trechos tracejados são quadros em que a trilha existia só como previsão.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 120, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, espacoTempo: true } },
+          fontes: ['nb02'],
+        },
+        {
+          id: 'c6-conferir',
+          fase: 'conferir',
+          titulo: 'Responsabilidades',
+          texto: ['Responda sem olhar o código.'],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 120, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true } },
+          questao: {
+            id: 'q-c6-papel',
+            enunciado: 'Onde o Supervision entra no pipeline de rastreamento dos notebooks?',
+            opcoes: [
+              { texto: 'Ele executa o ByteTrack.', correta: false, feedback: 'Não nas versões fixadas: o rastreador vem do pacote trackers (ByteTrackTracker). sv.ByteTrack está depreciado.' },
+              { texto: 'Na padronização e manipulação dos resultados (sv.Detections, filtros, geometria) e na anotação; o rastreador vem do pacote trackers.', correta: true, feedback: 'Isso. As duas bibliotecas conversam pelo mesmo contêiner: sv.Detections entra e sai do update().' },
+              { texto: 'Só na leitura do vídeo.', correta: false, feedback: 'Ele também lê vídeo (get_video_frames_generator), mas o papel central é o contêiner de dados e os anotadores.' },
+            ],
+          },
+          fontes: ['sv-migracao', 'nb02'],
+        },
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────── 7
+    {
+      id: 'drone-alto',
+      numero: 7,
+      titulo: 'Desafio do drone alto',
+      duracaoMin: 10,
+      objetivo: 'Diagnosticar uma configuração inadequada para objetos pequenos.',
+      evidencia: 'Justificar um ajuste e apontar um erro que continua depois dele.',
+      aprofundamento: ['visdrone', 'hota', 'botsort'],
+      passos: [
+        {
+          id: 'c7-observar',
+          fase: 'observar',
+          titulo: 'Carros de 26 × 13 pixels',
+          texto: [
+            'A 120 m de altura, cada carro ocupa cerca de 26 × 13 px. O detector simulado dá scores modestos (em torno de 0,32–0,68), caixas instáveis e mais falsos positivos.',
+            'Esta cena usa os valores do **notebook 03**: detector 0,30, alta confiança 0,60, ativação 0,30. Veja o resumo: dos 9 veículos, só 4 IDs, cobertura de 29,2% e, em média, 15 quadros até o primeiro ID.',
+            'Imagens aéreas com objetos pequenos são um domínio próprio (VisDrone): resultados medidos com pedestres ou câmeras no chão não se transferem automaticamente.',
+          ],
+          cena: { cenario: 'alto', predefinicao: 'nb03', quadro: 120, vista: 'topo', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true } },
+          mostrarResumo: true,
+          fontes: ['nb03', 'visdrone'],
+        },
+        {
+          id: 'c7-prever',
+          fase: 'prever',
+          titulo: 'Diagnóstico',
+          texto: ['Ligue os scores e compare-os com os limiares antes de responder.'],
+          cena: { cenario: 'alto', predefinicao: 'nb03', quadro: 120, vista: 'topo', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true } },
+          mostrarEtapas: true,
+          questao: {
+            id: 'q-c7-diagnostico',
+            enunciado: 'Qual parâmetro é o principal responsável pelos poucos IDs nesta cena?',
+            opcoes: [
+              { texto: 'high_conf_det_threshold = 0,60.', correta: true, feedback: 'Isso. Quase todos os carros têm score abaixo de 0,60: caem na etapa 2, que só mantém trilhas, e nunca nascem. A ativação de 0,30 não tem efeito extra, porque só caixas altas (≥ 0,60) podem nascer.' },
+              { texto: 'lost_track_buffer = 30.', correta: false, feedback: 'O buffer mantém trilhas que já existem. Aqui o problema é que elas nem nascem.' },
+              { texto: 'minimum_iou_threshold = 0,10.', correta: false, feedback: '0,10 já é tolerante; subir pioraria a fragmentação, mas não explica a falta de nascimentos.' },
+              { texto: 'track_activation_threshold = 0,30.', correta: false, feedback: 'Ele só vale para caixas altas sem par. Com a alta em 0,60, qualquer valor abaixo de 0,60 é inócuo.' },
+            ],
+          },
+          fontes: ['nb03', 'trackers-doc'],
+        },
+        {
+          id: 'c7-manipular',
+          fase: 'manipular',
+          titulo: 'Ajuste um fator',
+          texto: [
+            'Mova apenas **Limiar alta × baixa** e acompanhe o resumo: 0,60 → 4 IDs (29,2%); 0,50 → 7 IDs (58,1%); 0,40 → 10 IDs (84,5%); 0,35 → 11 IDs (85,5%).',
+            'Repare no erro que aparece junto com a melhora: a partir de 0,40 surge uma troca de ID, e com 0,35 os IDs (11) já passam do número de veículos (9), com um falso positivo confirmado. Mais nascimentos também significam mais chances de nascer errado.',
+            'Mude um parâmetro por vez e anote o efeito (notebook 03, célula 55). Não escolha valores só para bater um total conhecido.',
+          ],
+          cena: { cenario: 'alto', predefinicao: 'nb03', quadro: 120, vista: 'topo', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true } },
+          parametroLivre: 'high_conf_det_threshold',
+          mostrarResumo: true,
+          fontes: ['nb03'],
+        },
+        {
+          id: 'c7-limites',
+          fase: 'explicar',
+          titulo: 'O que estas métricas não dizem',
+          texto: [
+            'O resumo do clipe compara o rastreador com a verdade de solo da simulação, casando caixas por IoU ≥ 0,3. É uma métrica didática para comparar configurações **nesta cena**: não é HOTA, IDF1 nem MOTA oficial.',
+            'O HOTA separa três coisas que aqui aparecem misturadas: acerto de detecção, de associação e de localização. Num vídeo real, a validação exige uma referência independente, anotada antes de olhar a saída automática (notebook 03, células 15 e 49).',
+            'A cena também não tem movimento de câmera. Um drone real deriva; métodos como o BoT-SORT compensam o movimento da câmera antes de associar.',
+          ],
+          cena: { cenario: 'alto', predefinicao: 'nb03', ajustes: { high_conf_det_threshold: 0.35 }, quadro: 120, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true } },
+          mostrarResumo: true,
+          fontes: ['hota', 'nb03', 'botsort'],
+        },
+        {
+          id: 'c7-conferir',
+          fase: 'conferir',
+          titulo: 'Conclusão válida',
+          texto: ['Última questão da aula.'],
+          cena: { cenario: 'alto', predefinicao: 'nb03', ajustes: { high_conf_det_threshold: 0.35 }, quadro: 120, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true } },
+          questao: {
+            id: 'q-c7-conclusao',
+            enunciado: 'Você baixou high_conf_det_threshold de 0,60 para 0,35 e a cobertura subiu de 29,2% para 85,5%. Qual conclusão é válida?',
+            opcoes: [
+              { texto: '0,35 é o valor certo para drones a 120 m.', correta: false, feedback: 'Não. O resultado vale para esta cena sintética e este detector simulado.' },
+              { texto: 'O ajuste melhora esta cena, mas trouxe um erro novo (troca e ID a mais) e precisa ser validado em vídeo real com referência independente.', correta: true, feedback: 'Isso. Um ajuste justificado aponta o mecanismo (caixas pequenas não nasciam), mede o ganho e reconhece o erro residual.' },
+              { texto: 'Agora o rastreador identifica corretamente todos os veículos.', correta: false, feedback: 'Não. Há mais IDs que veículos e uma troca de ID. Nenhum ajuste garante identidade correta para todos os objetos.' },
+            ],
+          },
+          fontes: ['nb03', 'hota'],
+        },
+      ],
+    },
+  ],
+};

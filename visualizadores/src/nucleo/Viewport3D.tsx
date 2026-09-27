@@ -32,6 +32,9 @@ export const VISTAS: Record<NomeVista, Vista> = {
   perspectiva: { rotulo: 'Perspectiva', tecla: '0', pos: [5.2, 5.4, 6.4], alvo: [0.4, 0.3, 0] },
 };
 
+const reduzirMovimento = () =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
 // Anima câmera e alvo até a vista pedida; o arraste do usuário cancela a animação.
 function AnimadorDeVista({ destino, controlesRef }: { destino: Destino; controlesRef: RefObject<OrbitControlsImpl | null> }) {
   const { camera } = useThree();
@@ -57,7 +60,8 @@ function AnimadorDeVista({ destino, controlesRef }: { destino: Destino; controle
   useFrame((_, dt) => {
     const c = controlesRef.current;
     if (!ativo.current || !c) return;
-    const k = 1 - Math.pow(0.001, dt);
+    // Com prefers-reduced-motion, a câmera salta direto para a vista pedida.
+    const k = reduzirMovimento() ? 1 : 1 - Math.pow(0.001, dt);
     camera.position.lerp(pos.current, k);
     c.target.lerp(alvo.current, k);
     c.update();

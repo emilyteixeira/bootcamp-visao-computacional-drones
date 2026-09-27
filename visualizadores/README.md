@@ -22,7 +22,7 @@ Nenhuma biblioteca JavaScript é "baseada em Blender". A interação segue as co
 ```bash
 cd visualizadores
 npm install
-npm run dev          # http://localhost:5173/#bytetrack
+npm run dev          # http://localhost:5173/#bytetrack (laboratório) e #curso-bytetrack (Aula 1)
 npm run typecheck    # tsc strict (TypeScript 7)
 npm test             # testes da lógica (tsx + node:test), incluindo fixtures do trackers 2.6.1
 npm run test:visual  # testes visuais Playwright (6 cenários, referências em tests/visual/referencias/)

@@ -10,9 +10,10 @@ export interface Reproducao {
   setVelocidade: Dispatch<SetStateAction<number>>;
 }
 
-export function usarReproducao(totalQuadros: number, fps = 30): Reproducao {
-  const [quadro, setQuadro] = useState(0);
-  const [tocando, setTocando] = useState(true);
+// iniciarTocando = false: a aula guiada começa pausada (plano §6); o laboratório segue tocando.
+export function usarReproducao(totalQuadros: number, fps = 30, iniciarTocando = true, quadroInicial = 0): Reproducao {
+  const [quadro, setQuadro] = useState(quadroInicial);
+  const [tocando, setTocando] = useState(iniciarTocando);
   const [velocidade, setVelocidade] = useState(0.5);
   const acumulado = useRef(0);
 

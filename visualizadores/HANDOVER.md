@@ -2,7 +2,7 @@
 
 Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e24f`).
 
-> **Etapa 0 concluída** e **motor alinhado ao `trackers` 2.6.1** (D1, D3, D4, D5), conferido contra saídas reais do Python: ver [auditoria](docs/auditoria-bytetrack-etapa0.md) §8. D2 (Kalman) mantida como simplificação. **Etapa 1 concluída:** todo `src/` e os testes de lógica em TypeScript strict. Próximo: etapa 2 (estrutura do curso, rota `#curso-bytetrack`).
+> **Etapa 0 concluída** e **motor alinhado ao `trackers` 2.6.1** (D1, D3, D4, D5), conferido contra saídas reais do Python: ver [auditoria](docs/auditoria-bytetrack-etapa0.md) §8. D2 (Kalman) mantida como simplificação. **Etapa 1 concluída:** todo `src/` e os testes de lógica em TypeScript strict. **Etapa 2 concluída:** rota `#curso-bytetrack` com os 7 capítulos roteirizados, progresso local e testes. Próximo: etapa 3 (interações específicas da narrativa ByteTrack).
 
 > O curso guiado e a migração TypeScript estão planejados, ainda não implementados. Consulte o [plano completo](docs/plano-curso-bytetrack-supervision.md). Os registros de publicação abaixo descrevem a sessão anterior; não são uma nova verificação de deploy.
 
@@ -12,10 +12,11 @@ Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e
 |:--|:--|
 | Módulo ByteTrack | Pronto e publicado em https://claude.ai/artifact/VwfuEtPjrsJmJoM7Y8AX4j (privado até ser compartilhado) |
 | Typecheck | `npm run typecheck` (tsc 7.0.2, strict, sem `allowJs`): 0 erros. Roda na CI antes de `npm test` |
-| Testes | `npm test` (tsx + node:test): 26/26 (5 originais + 18 fixtures Python + 3 de buffer/Kalman). `npm run test:visual`: 6/6 em 3 execuções seguidas, com 2 referências atualizadas após revisão (27/09/2026) |
+| Curso | `#curso-bytetrack` (aba **Aula 1**): 7 capítulos, 33 passos, 7 questões, 60 min. Conteúdo em `src/curso/capitulos/aula01.ts` |
+| Testes | `npm test` (tsx + node:test): 39/39 (inclui 13 do curso). `npm run test:visual`: 10/10 em 3 execuções (6 do laboratório sem atualizar referências + 4 do curso). Contagem anterior: 26/26 (5 originais + 18 fixtures Python + 3 de buffer/Kalman). `npm run test:visual`: 6/6 em 3 execuções seguidas, com 2 referências atualizadas após revisão (27/09/2026) |
 | GitHub Pages | Publicado em https://emilyteixeira.github.io/bootcamp-visao-computacional-drones/#bytetrack (run 36253508693, deploy às 15:55 UTC de 26/09/2026). Cada push na `main` que altere `visualizadores/` republica |
 | `useblender-cli` | Cancelada pela autora em 26/09/2026. O visual continua com R3F e drei |
-| Build | `npm run build:link`: arquivo único de 1.679 KiB (medido na etapa 0; o valor anterior de ~1,2 MB estava desatualizado) |
+| Build | `npm run build:link`: arquivo único de 1.739 KiB com o curso (1.680 KiB antes da etapa 2; 1.679 KiB (medido na etapa 0; o valor anterior de ~1,2 MB estava desatualizado) |
 | Vagas reservadas | `iou-nms`, `kalman`, `linezone`, `homografia` (status `planejado` em `src/registro.js`) |
 
 ## 2. Decisões tomadas
@@ -31,7 +32,11 @@ Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e
 | Ordem: motor alinhado → migração TS → curso | Decisão da autora (27/09/2026); cada passo em commit próprio |
 | Cenas sintéticas e determinísticas (semente) | Permitem comparar parâmetros na mesma cena e medir contra verdade de solo |
 | Tema escuro único, inspirado no Blender | Escolha deliberada para o viewport 3D |
-| Roteamento por `#id` | O link do Artifact só preserva âncoras simples |
+| Roteamento por `#id` | O link do Artifact só preserva âncoras simples. Por isso a posição na aula fica no `localStorage`, não na âncora |
+| Aula = dado puro (`Aula`/`Capitulo`/`Passo` em `src/curso/tipos.ts`) | Cada passo declara cenário, predefinição, ajustes, quadro, camadas e vista; a cena é recalculada de forma determinística. Nada lê o Canvas |
+| Progresso em `localStorage` (`curso-bytetrack:progresso`) com `versaoConteudo` | Sem backend no MVP. Versão diferente, JSON inválido ou posição fora do roteiro → recomeça com aviso. **Mudar a ordem de passos exige subir `versaoConteudo`** |
+| Números citados no roteiro são testados | `tests/curso.test.ts` falha se motor/cenas/predefinições mudarem os valores do texto; revisar o texto antes de atualizar o teste |
+| Rótulo da aba = “Aula 1” | “Aula 1 · ByteTrack” quebrava a barra de abas em 2 linhas a 1440 px e deslocava o laboratório |
 
 ## 3. Semântica do tracker (bytetrack.js) — igual a trackers 2.6.1
 
@@ -61,6 +66,7 @@ Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baix
 | Aba ativa de módulo planejado ilegível | `.aba-modulo.planejado` sobrescrevia a cor de `.ativa` | Regra `.aba-modulo.ativa.planejado` |
 | Teste visual do celular falhou na CI (~2,05%, tolerância de 2%) | Canvas WebGL ocupa ~62% da tela; rasterização por software varia entre máquinas | Canvas mascarado só nesse teste de layout. O 3D segue coberto pelos testes de desktop |
 | Terminal travado | `cat > arquivo` sem heredoc ficou esperando stdin | Sempre usar heredoc |
+| Testes visuais comparando build antiga | Um `vite preview` manual na porta 4173 ficou aberto e o Playwright o reaproveitou (`reuseExistingServer`) | Encerrar previews manuais antes de `npm run test:visual`; não usar `pkill -f "vite preview"` no mesmo comando (mata o próprio shell) |
 
 ## 5. Efeitos calibrados (27/09/2026, motor alinhado; Notebook 02 como base; IDs/trocas/cobertura)
 
@@ -77,7 +83,7 @@ Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baix
 2. ~~Criar fixtures pequenas~~ — feito: 16 fixtures em `tests/fixtures/bytetrack/`.
 3. ~~Decisão da autora sobre D1–D5~~ — alinhados (27/09/2026). D2 mantida.
 4. ~~Migrar para TypeScript~~ — feito (27/09/2026), sem mudança de comportamento. Pendente opcional: `tests/visual/*.spec.js` e `playwright.config.js` seguem em JS.
-5. Implementar a rota de curso guiado, a narrativa em sete capítulos e o inspetor de Supervision conforme o plano.
+5. ~~Rota do curso e roteiro dos sete capítulos~~ — feito (etapa 2). Pendentes: etapa 3 (microcena fixture 0,18, associação por fase animada, linha de estados, comparação A/B, associação manual do cap. 1), etapa 4 (inspetor Supervision sincronizado, replays Python), etapa 5 (fallback 2D sem WebGL, acessibilidade completa, revisão).
 6. Validar aula, acessibilidade, build e testes; registrar resultados antes de publicação.
 
 As vagas Kalman, LineZone e homografia continuam reservadas, mas a prioridade atual é a primeira aula ByteTrack + Supervision.
@@ -167,3 +173,22 @@ Histórico: [docs/historico/2026-09-27-sessao-alinhamento-motor.md](docs/histori
 - Única mudança interna: `atualizar()` copia as detecções de entrada em vez de mutá-las (sem efeito observável; `executar` já passava cópias).
 - Verificação: typecheck 0 erros; 26/26; build e build:link (1.680 KiB); 6/6 visuais **sem atualizar referências**; calibração do §5 idêntica antes/depois.
 - Dependências novas (dev): `typescript@7.0.2`, `tsx@4.23.15`, `@types/react`, `@types/react-dom` 19.3, `@types/three` 0.186, `@types/node` 22.
+
+## 12. Etapa 2 — rota `#curso-bytetrack` — 27/09/2026
+
+Histórico: [docs/historico/2026-09-27-sessao-etapa2-curso.md](docs/historico/2026-09-27-sessao-etapa2-curso.md).
+
+### Arquivos
+- `src/curso/tipos.ts` (contratos), `fontes.ts` (catálogo de 18 fontes), `capitulos/aula01.ts` (roteiro), `progresso.ts` (navegação/persistência puras), `cenaDoPasso.ts`, `usarAula.ts` (hook + `localStorage` protegido), `AulaShell.tsx` (palco + roteiro), `CursoByteTrack.tsx` (entrada da rota).
+- `src/curso/componentes/`: `PainelRoteiro`, `Questao`, `Referencia`, `TextoRico`, `InspetorDetections`, `ResumoClipe`, `IndiceCapitulos`.
+- Alterados: `registro.ts` (entrada `curso-bytetrack`), `usarReproducao.ts` (`iniciarTocando`, `quadroInicial`; laboratório inalterado), `Viewport3D.tsx` (salto de câmera com `prefers-reduced-motion`), `estilos.css`.
+- Testes: `tests/curso.test.ts` (13), `tests/visual/curso.spec.js` (4) + referência `curso-passo-1.png`.
+
+### Comportamento
+- Cada passo: fase (observar/prever/manipular/explicar/conferir), texto, cena imposta, opcionalmente 1 parâmetro livre, painéis (etapas do quadro, detecções, resumo do clipe), trecho de notebook com origem, questão com feedback por opção, fontes.
+- A aula começa pausada no quadro do passo; trocar de passo restaura parâmetros, camadas, quadro e vista. Botão “⟲ Quadro N” volta ao quadro do passo; link para `#bytetrack`.
+- Quadros-chave usados (motor alinhado, notebook 02): q60–61 (identidade, FP 0,18), q63/q67 (etapa 2 sob a árvore), q95 (#1 perdida 17/30), q106 (#1 recuperada, score 0,17, IoU 0,12), q1–2 (tentativas, IDs 0 e 1), q175–q200 (#3 perdida, removida no 185, #5 no 200). Drone alto com notebook 03: 4 IDs / 29,2%.
+- O D2 é explicado no texto dos capítulos 3 e 5 (Python real perde o ID no viaduto).
+
+### Como continuar
+`npm run dev` → `http://localhost:5173/#curso-bytetrack`. Para limpar o progresso: botão “Recomeçar a aula” ou `localStorage.removeItem('curso-bytetrack:progresso')`.
