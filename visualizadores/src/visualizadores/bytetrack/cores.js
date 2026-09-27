@@ -9,4 +9,4 @@ export const COR_ETAPA = {
 };
 
 const PALETA_IDS = ['#3987e5', '#e0569a', '#9085e9', '#e66767', '#5cb85c', '#e0a800', '#4fc3f7', '#c0ca33'];
-export const corDoId = (id) => (id > 0 ? PALETA_IDS[(id - 1) % PALETA_IDS.length] : '#35d0c0');
+export const corDoId = (id) => (id >= 0 ? PALETA_IDS[id % PALETA_IDS.length] : '#35d0c0');

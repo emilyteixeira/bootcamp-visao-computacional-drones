@@ -205,3 +205,9 @@ A cada avanço, atualizar `visualizadores/HANDOVER.md` com: commit/branch, etapa
 
 Próximo passo concreto: etapa 0, seguida da migração TypeScript em uma mudança separada da lógica e da narrativa. Este plano não declara implementados recursos novos nem valida a execução dos notebooks.
 
+
+## 11. Atualizações
+
+- **27/09/2026 — decisões da autora.** Público mantido conforme §1, sem encurtar capítulos e com explicações detalhadas em todos eles. Motor alinhado ao `trackers` 2.6.1 (D1, D3, D4, D5) antes da migração TypeScript; Kalman didático (D2) mantido e rotulado. Detalhes e números: `docs/auditoria-bytetrack-etapa0.md` §6 e §8.
+- **Consequências para o roteiro (§5):** capítulo 4 deve mostrar que a etapa 2 também atende trilhas perdidas e tentativas; capítulo 5 deve explicar que o ID só sai a partir do 2º quadro (mínimo 1 ou 2 têm o mesmo atraso), que o primeiro ID é 0 e que o efeito do buffer depende da caixa prevista não encolher (no `trackers` 2.6.1 a cena do viaduto perde o ID).
+- **§8, auditoria prioritária:** atribuição com limiar posterior é equivalente ao Python (fixture `ambiguidade-limiar`); o mesmo IoU nas duas etapas também é o comportamento do `trackers` 2.6.1; o Kalman de referência é XYXY, não xyah.

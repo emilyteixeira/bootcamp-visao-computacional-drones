@@ -135,7 +135,7 @@ function trajetorias(resultados, ate) {
   const porId = new Map();
   for (let t = 0; t <= ate; t++) {
     for (const tr of resultados[t].trilhas) {
-      if (tr.id <= 0) continue;
+      if (tr.id < 0) continue;
       const [x, z] = pxParaMundo((tr.caixa[0] + tr.caixa[2]) / 2, (tr.caixa[1] + tr.caixa[3]) / 2);
       const tipo = tr.semAtualizar === 0 ? 'obs' : 'prev';
       if (!porId.has(tr.id)) porId.set(tr.id, []);
@@ -206,9 +206,9 @@ export default function Cena3D({ cenario, cena, resultados, quadro, camadas }) {
         const [lx, lz] = pxParaMundo(t.caixa[0], t.caixa[1]);
         return (
           <group key={`t${t.interno}`}>
-            <Retangulo caixa={t.caixa.map((v, k) => v + (k < 2 ? -4 : 4))} y={yAnot + 0.01} cor={cor} espessura={t.id > 0 ? 3 : 1.2} tracejado={perdida || t.id < 0} opacidade={perdida ? 0.8 : 1} />
+            <Retangulo caixa={t.caixa.map((v, k) => v + (k < 2 ? -4 : 4))} y={yAnot + 0.01} cor={cor} espessura={t.id >= 0 ? 3 : 1.2} tracejado={perdida || t.id < 0} opacidade={perdida ? 0.8 : 1} />
             <Html position={[lx, yAnot, lz]} className={`rotulo-trilha ${perdida ? 'perdida' : ''}`} style={{ '--cor': cor }} zIndexRange={[20, 10]}>
-              {t.id > 0 ? `#${t.id}` : 'tentativa'}
+              {t.id >= 0 ? `#${t.id}` : 'tentativa'}
               {perdida && <small> perdida {t.semAtualizar}/{t.maxPerdido}</small>}
             </Html>
           </group>

@@ -15,8 +15,9 @@ export function criarKalman([cx, cy, w, h]) {
   return { x, P };
 }
 
-// congelarTamanho: como no ByteTrack original, trilhas fora do estado "ativa" zeram a
-// velocidade de tamanho para a caixa prevista não encolher até sumir durante a oclusão.
+// congelarTamanho: como no repositório original do ByteTrack (não no trackers 2.6.1, que usa
+// XYXY e deixa a caixa encolher), trilhas fora do estado "ativa" zeram a velocidade de tamanho.
+// Simplificação didática mantida por decisão da autora (D2, docs/auditoria-bytetrack-etapa0.md).
 export function prever(kf, congelarTamanho = false) {
   if (congelarTamanho) { kf.x[2][1] = 0; kf.x[3][1] = 0; }
   const h = kf.x[3][0];

@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import Controle from '../../nucleo/ui/Controle.jsx';
 import { PARAMETROS, PREDEFINICOES, valoresVarredura } from './parametros.js';
-import { executar } from './bytetrack.js';
+import { executar, quadrosMaximosPerdidos } from './bytetrack.js';
 import { avaliar } from './metricas.js';
 import GraficoSensibilidade from './GraficoSensibilidade.jsx';
 import { COR_ETAPA, corDoId } from './cores.js';
@@ -13,7 +13,7 @@ const fmt = (v, passo) => (passo >= 1 ? String(v) : v.toFixed(2));
 export function PainelParametros({ parametros, setParametros }) {
   const alterar = (chave, v) => setParametros((p) => ({ ...p, [chave]: v }));
   const ativa = PREDEFINICOES.find((pr) => Object.entries(pr.valores).every(([k, v]) => parametros[k] === v));
-  const maxPerdido = Math.max(1, Math.round((parametros.lost_track_buffer * parametros.frame_rate) / 30));
+  const maxPerdido = quadrosMaximosPerdidos(parametros);
   const avisos = [];
   if (parametros.limiar_detector >= parametros.high_conf_det_threshold)
     avisos.push('Limiar do detector ≥ limiar alta × baixa: nenhuma detecção baixa chega ao tracker e a etapa 2 fica vazia.');
@@ -34,7 +34,7 @@ export function PainelParametros({ parametros, setParametros }) {
       </div>
       {ativa && <p className="nota">{ativa.descricao}</p>}
       {avisos.map((a) => <p key={a} className="aviso">{a}</p>)}
-      <p className="nota mono">Buffer efetivo: {parametros.lost_track_buffer} × {parametros.frame_rate}/30 = {maxPerdido} quadros</p>
+      <p className="nota mono">Buffer efetivo: {parametros.lost_track_buffer === 0 ? 'buffer 0 → 0 quadros' : `max(1, ⌈${parametros.frame_rate}/30 × ${parametros.lost_track_buffer}⌉) = ${maxPerdido} quadros`}</p>
       {PARAMETROS.map((m) => (
         <Controle
           key={m.chave}
@@ -72,13 +72,13 @@ function Passo({ n, titulo, cor, contagem, children }) {
   );
 }
 
-const Id = ({ id }) => <span className="id-chip" style={{ '--cor': corDoId(id) }}>{id > 0 ? `#${id}` : 'tent.'}</span>;
+const Id = ({ id }) => <span className="id-chip" style={{ '--cor': corDoId(id) }}>{id >= 0 ? `#${id}` : 'tent.'}</span>;
 
 export function PainelQuadro({ res, quadro, parametros }) {
   const { log } = res;
   const altas = res.deteccoes.filter((d) => d.score >= parametros.high_conf_det_threshold).length;
   const baixas = res.deteccoes.length - altas;
-  const ativas = res.trilhas.filter((t) => t.semAtualizar === 0 && t.id > 0).length;
+  const ativas = res.trilhas.filter((t) => t.semAtualizar === 0 && t.id >= 0).length;
   return (
     <div className="painel-secao">
       <p className="rotulo">Quadro {quadro} · {(quadro / 30).toFixed(2)} s</p>
@@ -97,9 +97,9 @@ export function PainelQuadro({ res, quadro, parametros }) {
             {log.etapa1.map((e) => <li key={e.trilha}><Id id={e.id} /> ← score {e.score.toFixed(2)} · IoU {e.iou.toFixed(2)}{e.recuperada && <em> reencontrada</em>}</li>)}
           </ul>
         </Passo>
-        <Passo n="4" titulo="Etapa 2 · baixas × trilhas ativas restantes" cor={COR_ETAPA[2]} contagem={log.etapa2.length}>
+        <Passo n="4" titulo="Etapa 2 · baixas × trilhas livres da etapa 1" cor={COR_ETAPA[2]} contagem={log.etapa2.length}>
           <ul className="pares">
-            {log.etapa2.map((e) => <li key={e.trilha}><Id id={e.id} /> ← score {e.score.toFixed(2)} · IoU {e.iou.toFixed(2)}</li>)}
+            {log.etapa2.map((e) => <li key={e.trilha}><Id id={e.id} /> ← score {e.score.toFixed(2)} · IoU {e.iou.toFixed(2)}{e.recuperada && <em> reencontrada</em>}</li>)}
           </ul>
           {log.baixasSemPar.length > 0 && <p>{log.baixasSemPar.length} baixa(s) sem par ignoradas: baixa nunca cria trilha.</p>}
         </Passo>
@@ -111,11 +111,11 @@ export function PainelQuadro({ res, quadro, parametros }) {
         </Passo>
         <Passo n="6" titulo="Nascimento e confirmação" cor={COR_ETAPA.nova} contagem={log.novas.length}>
           {log.altasSemAtivacao.length > 0 && <p>{log.altasSemAtivacao.length} alta(s) sem par abaixo de {parametros.track_activation_threshold.toFixed(2)}: não nascem.</p>}
-          {log.novas.length > 0 && <p>{log.novas.length} tentativa(s) nova(s); ID só após {parametros.minimum_consecutive_frames} quadro(s) seguido(s).</p>}
+          {log.novas.length > 0 && <p>{log.novas.length} tentativa(s) nova(s), com tracker_id −1 neste quadro. O ID sai numa associação seguinte, quando houver {Math.max(2, parametros.minimum_consecutive_frames)} quadro(s) seguido(s) com par (o nascimento conta como o 1º).</p>}
           {log.confirmadas.length > 0 && <p>Confirmado(s): {log.confirmadas.map((id) => <Id key={id} id={id} />)}</p>}
         </Passo>
       </ol>
-      <p className="nota">Saída do quadro: {ativas} trilha(s) com tracker_id visível. Tentativas saem com tracker_id = −1 e são filtradas antes de anotar.</p>
+      <p className="nota">Saída do quadro: {ativas} trilha(s) com tracker_id visível (o ID 0 é válido). Tentativas saem com tracker_id = −1 e são filtradas antes de anotar.</p>
     </div>
   );
 }
@@ -201,9 +201,9 @@ export function PainelConceito() {
       <p>Um detector devolve caixas com score. Filtrar as de score baixo antes do rastreamento joga fora objetos parcialmente ocluídos. O ByteTrack associa <b>todas</b> as caixas, em duas etapas no mesmo quadro:</p>
       <ol>
         <li><b style={{ color: COR_ETAPA[1] }}>Etapa 1</b>: caixas de score alto × todas as trilhas (ativas, perdidas e tentativas).</li>
-        <li><b style={{ color: COR_ETAPA[2] }}>Etapa 2</b>: caixas de score baixo × trilhas ativas que sobraram. Aqui a copa da árvore deixa de apagar o carro.</li>
+        <li><b style={{ color: COR_ETAPA[2] }}>Etapa 2</b>: caixas de score baixo × todas as trilhas que sobraram da etapa 1 (ativas, perdidas e tentativas). Aqui a copa da árvore deixa de apagar o carro.</li>
         <li>Caixa baixa sem par é ignorada: <b>evidência fraca mantém, mas não cria</b> trilhas.</li>
-        <li>Caixa alta sem par, com score ≥ ativação, abre uma <b style={{ color: COR_ETAPA.nova }}>tentativa</b>; o ID só aparece após a confirmação.</li>
+        <li>Caixa alta sem par, com score ≥ ativação, abre uma <b style={{ color: COR_ETAPA.nova }}>tentativa</b> com tracker_id −1; o ID (a partir de 0) só aparece numa associação posterior, após a confirmação.</li>
       </ol>
       <h3>IoU: a medida de compatibilidade</h3>
       <DemoIou />
@@ -219,7 +219,7 @@ export function PainelConceito() {
         <dt>arrastar</dt><dd>orbitar · botão direito move · roda aproxima</dd>
       </dl>
       <h3>Limites da simulação</h3>
-      <p>Cenas e detector são sintéticos e determinísticos. Kalman em xywh (o original usa xyah), mesmo IoU mínimo nas duas etapas e sem compensação de movimento da câmera. Serve para intuição; os valores dos notebooks precisam ser validados no vídeo real.</p>
+      <p>Cenas e detector são sintéticos e determinísticos. As regras de associação e de ciclo de vida seguem o <code>trackers</code> 2.6.1 (conferidas contra o Python). Diferença mantida: o Kalman usa centro, largura e altura e congela o tamanho da caixa enquanto a trilha está perdida; o Python usa os cantos (XYXY) e deixa a caixa prevista encolher, o que em oclusões longas pode gerar IDs novos que aqui não aparecem. Sem compensação de movimento da câmera. Serve para intuição; os valores dos notebooks precisam ser validados no vídeo real.</p>
     </div>
   );
 }

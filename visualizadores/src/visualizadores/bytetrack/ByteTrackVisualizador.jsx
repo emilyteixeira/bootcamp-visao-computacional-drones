@@ -40,7 +40,7 @@ function faixasEtapa2(resultados) {
   const faixas = [];
   let inicio = null;
   resultados.forEach((r, t) => {
-    const tem = r.log.etapa2.some((e) => e.id > 0);
+    const tem = r.log.etapa2.some((e) => e.id >= 0);
     if (tem && inicio === null) inicio = t;
     if ((!tem || t === resultados.length - 1) && inicio !== null) {
       faixas.push({ chave: inicio, inicio, fim: tem ? t : t - 1, classe: 'etapa2', texto: 'Etapa 2 mantendo trilhas' });
@@ -73,8 +73,8 @@ export default function ByteTrackVisualizador() {
     if (id === 'espacoTempo' && !camadas.espacoTempo) viewport.current?.irPara('perspectiva');
   };
 
-  const confirmadas = res.trilhas.filter((t) => t.id > 0 && t.semAtualizar === 0).length;
-  const perdidas = res.trilhas.filter((t) => t.id > 0 && t.semAtualizar > 0).length;
+  const confirmadas = res.trilhas.filter((t) => t.id >= 0 && t.semAtualizar === 0).length;
+  const perdidas = res.trilhas.filter((t) => t.id >= 0 && t.semAtualizar > 0).length;
 
   return (
     <div className="bt">

@@ -2,7 +2,7 @@
 
 Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e24f`).
 
-> **Etapa 0 concluída** (baseline + auditoria): ver [auditoria](docs/auditoria-bytetrack-etapa0.md). Etapas 1–5 não iniciadas. O motor JS **não** espelha integralmente `trackers` 2.6.1: divergências D1–D7 catalogadas.
+> **Etapa 0 concluída** e **motor alinhado ao `trackers` 2.6.1** (D1, D3, D4, D5), conferido contra saídas reais do Python: ver [auditoria](docs/auditoria-bytetrack-etapa0.md) §8. D2 (Kalman) mantida como simplificação. Próximo: etapa 1 (TypeScript).
 
 > O curso guiado e a migração TypeScript estão planejados, ainda não implementados. Consulte o [plano completo](docs/plano-curso-bytetrack-supervision.md). Os registros de publicação abaixo descrevem a sessão anterior; não são uma nova verificação de deploy.
 
@@ -11,7 +11,7 @@ Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e
 | Item | Estado |
 |:--|:--|
 | Módulo ByteTrack | Pronto e publicado em https://claude.ai/artifact/VwfuEtPjrsJmJoM7Y8AX4j (privado até ser compartilhado) |
-| Testes | `npm test`: 23 testes, 16 ok, 0 falhas, 7 `todo` (divergências conhecidas com o Python). `npm run test:visual`: 6/6 (reexecutado em 26/09/2026, etapa 0) |
+| Testes | `npm test`: 26/26 (5 originais + 18 fixtures Python + 3 de buffer/Kalman). `npm run test:visual`: 6/6 em 3 execuções seguidas, com 2 referências atualizadas após revisão (27/09/2026) |
 | GitHub Pages | Publicado em https://emilyteixeira.github.io/bootcamp-visao-computacional-drones/#bytetrack (run 36253508693, deploy às 15:55 UTC de 26/09/2026). Cada push na `main` que altere `visualizadores/` republica |
 | `useblender-cli` | Cancelada pela autora em 26/09/2026. O visual continua com R3F e drei |
 | Build | `npm run build:link`: arquivo único de 1.679 KiB (medido na etapa 0; o valor anterior de ~1,2 MB estava desatualizado) |
@@ -24,25 +24,27 @@ Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e
 | Vite + React 19 + R3F 9 + drei 10 + three 0.186 | Stack existente preservada. A decisão anterior de permanecer sem TypeScript foi substituída pelo pedido explícito de React + TypeScript em 26/09/2026; migração pendente |
 | Build em arquivo único (`vite-plugin-singlefile`) | O publicador de Artifacts só aceita scripts de CDNs permitidos. Com tudo embutido, não há dependência de CDN |
 | O tracker é reimplementado em JS e não chama o Python | Precisa rodar no navegador e responder aos controles na hora. Uma varredura de 14 valores leva cerca de 200 ms |
-| Nomes de `trackers.ByteTrackTracker` (trackers==2.6.1) | São os usados em `projeto-3/02_tracking.ipynb` e `03_projeto_final.ipynb`. `sv.ByteTrack` aparece só como mapeamento. **Semântica só parcialmente igual** (etapa 0, D1–D7) |
+| Nomes e semântica de `trackers.ByteTrackTracker` (trackers==2.6.1) | São os usados em `projeto-3/02_tracking.ipynb` e `03_projeto_final.ipynb`. `sv.ByteTrack` aparece só como mapeamento. Associação e ciclo de vida alinhados e verificados por fixtures (27/09/2026) |
+| **Inegociável:** Kalman didático cx,cy,w,h com tamanho congelado (D2) | Decisão da autora (27/09/2026). Rotulado como simplificação; não trocar por XYXY sem pedido |
+| **Inegociável:** público da aula 1 = plano §1 (entende detecção, começa em tracking) | Decisão da autora (27/09/2026): nenhum capítulo encurtado, tudo explicado em detalhe |
+| Ordem: motor alinhado → migração TS → curso | Decisão da autora (27/09/2026); cada passo em commit próprio |
 | Cenas sintéticas e determinísticas (semente) | Permitem comparar parâmetros na mesma cena e medir contra verdade de solo |
 | Tema escuro único, inspirado no Blender | Escolha deliberada para o viewport 3D |
 | Roteamento por `#id` | O link do Artifact só preserva âncoras simples |
 
-## 3. Semântica do tracker (bytetrack.js)
+## 3. Semântica do tracker (bytetrack.js) — igual a trackers 2.6.1
 
 Ordem em cada quadro:
-1. Filtro `limiar_detector`.
-2. Previsão de Kalman.
-3. Separação das detecções em ALTA (≥ `high_conf_det_threshold`) e BAIXA.
-4. Etapa 1: todas as trilhas × ALTAS.
-5. Etapa 2: trilhas `ativa` livres × BAIXAS. *(Python 2.6.1: todas as livres — D1)*
-6. Tentativa sem par é removida. Ativa sem par passa a `perdida`.
-7. Remoção quando `semAtualizar > round(lost_track_buffer × frame_rate / 30)`.
-8. Nascimento: ALTA livre com score ≥ `track_activation_threshold`.
-9. `tracker_id` emitido após `minimum_consecutive_frames` associações seguidas. Antes disso, −1. *(JS começa em 1, Python em 0 — D5; com mínimo 1, JS emite no nascimento — D3)*
+1. Filtro `limiar_detector` (fora do tracker, como `detectar()` nos notebooks).
+2. Previsão de Kalman de todas as trilhas; quem já estava sem atualização zera a contagem seguida; `semAtualizar += 1`.
+3. Separação em ALTA (≥ `high_conf_det_threshold`) e BAIXA.
+4. Etapa 1: **todas** as trilhas × ALTAS (húngaro maximizando IoU, depois rejeição por `minimum_iou_threshold`).
+5. Etapa 2: **todas as trilhas livres da etapa 1** (tentativas, ativas e perdidas) × BAIXAS, mesmo IoU mínimo.
+6. Ao associar: seguidas += 1; se seguidas ≥ `minimum_consecutive_frames` e sem ID → `tracker_id` (começa em **0**).
+7. Nascimento: ALTA livre com score ≥ `track_activation_threshold`, com seguidas = 1 e `tracker_id` −1. **O ID nunca sai no nascimento**: com mínimo 1 ou 2, o ID sai no 2º quadro.
+8. Sobrevive quem tem `semAtualizar ≤ quadrosMaximosPerdidos` **e** (tem ID, ou seguidas ≥ mínimo, ou foi atualizada agora). `quadrosMaximosPerdidos` = 0 se buffer 0; senão `max(1, ceil(frame_rate / 30 × buffer))`.
 
-Simplificações conhecidas: Kalman em cx,cy,w,h (trackers 2.6.1 usa XYXY; o repositório do artigo usa xyah — D2); sem compensação de movimento da câmera; avaliação com IoU ≥ 0,3. *Correção (etapa 0): o mesmo `minimum_iou_threshold` nas duas etapas também é o comportamento de trackers 2.6.1, não uma simplificação do JS.*
+Simplificações mantidas: Kalman em cx,cy,w,h com tamanho congelado fora de `ativa` (D2; Python usa XYXY sem congelar); sem compensação de movimento da câmera; sem modo por timestamp (D7); aceite exige IoU > 0 (D6, só importa com IoU mínimo 0); avaliação com IoU ≥ 0,3.
 
 Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baixa; `det_thresh` = ativação + 0,1; `minimum_matching_threshold` = 1 − IoU mínimo; piso fixo em 0,1.
 
@@ -51,7 +53,7 @@ Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baix
 | Problema | Causa | Correção |
 |:--|:--|:--|
 | Nenhuma trilha nascia | `associarPorIou` deduzia `nCol` da matriz, que fica vazia quando há 0 trilhas | `nCol` passou a ser um argumento explícito em todas as chamadas |
-| IDs novos depois do viaduto, mesmo com buffer 60 | A velocidade de tamanho do Kalman encolhia a caixa prevista até sumir | `prever(kf, congelarTamanho)` zera vw e vh quando a trilha não está `ativa`, como no original |
+| IDs novos depois do viaduto, mesmo com buffer 60 | A velocidade de tamanho do Kalman encolhia a caixa prevista até sumir | `prever(kf, congelarTamanho)` zera vw e vh quando a trilha não está `ativa`, como no repositório do artigo. **Atenção:** o `trackers` 2.6.1 tem esse comportamento (caixa encolhe); o JS diverge de propósito (D2, auditoria §8) |
 | Trocas de ID artificiais no cenário "Drone alto" | Carros da mesma faixa com velocidades diferentes se atravessavam | Velocidade fixada por faixa |
 | Teste visual da vista topo instável (3% de pixels) | A animação da câmera parava a menos de 0,01 do destino, em ponto variável | Encaixe exato no destino em `AnimadorDeVista` |
 | Testes visuais falharam na CI em 4 de 6 cenários (3–11% de pixels) | Fontes de fallback do sistema diferentes entre este contêiner e a imagem do Playwright | Fontes Barlow e JetBrains Mono embutidas via `@fontsource` (sem Google Fonts) |
@@ -59,18 +61,20 @@ Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baix
 | Teste visual do celular falhou na CI (~2,05%, tolerância de 2%) | Canvas WebGL ocupa ~62% da tela; rasterização por software varia entre máquinas | Canvas mascarado só nesse teste de layout. O 3D segue coberto pelos testes de desktop |
 | Terminal travado | `cat > arquivo` sem heredoc ficou esperando stdin | Sempre usar heredoc |
 
-## 5. Efeitos calibrados (Notebook 02 como base, formato IDs/trocas/cobertura)
+## 5. Efeitos calibrados (27/09/2026, motor alinhado; Notebook 02 como base; IDs/trocas/cobertura)
 
-- Árvore e viaduto, `lost_track_buffer`: 5 → 12/7/83%; 30 → 7/2/85%; 60 → 5/0/86%.
-- Drone alto, `high_conf_det_threshold`: 0,25 → 11/1/90%; 0,6 → 3/0/20%. É a armadilha do Notebook 03 em objetos pequenos.
-- Drone alto, `minimum_consecutive_frames`: 1 → 75 IDs (falsos positivos confirmados); 2 → 11. *Inválido para o Python (D3): lá um falso positivo de 1 quadro não recebe ID. Recalibrar após decidir D3.*
-- `minimum_iou_threshold` ≥ 0,5 fragmenta: no Drone alto, 67 IDs e 134 trocas.
+- Árvore e viaduto, `lost_track_buffer`: 5 → 9/4/88%; 30 → 7/2/89%; 60 → 5/0/91%. No Python real: 9 IDs nos três casos (efeito de D2, auditoria §8).
+- Árvore e viaduto, `limiar_detector` 0,10 → 0,25: 7/2/89% → 8/3/82% (etapa 2 sem candidatas).
+- Drone alto, `high_conf_det_threshold`: 0,25 → 10/0/91%; 0,6 → 4/0/29%. Armadilha do Notebook 03 em objetos pequenos. Python: 10 e 4 IDs.
+- Drone alto, `minimum_consecutive_frames`: 1 → 10; 2 → 10; 3 → 9 (1 falso positivo a menos). O valor antigo “1 → 75 IDs” era artefato de D3.
+- Drone alto, `minimum_iou_threshold` 0,5: 67/136/78% (fragmentação).
+- Cenas completas × Python (parâmetros padrão): Drone alto idêntico (0 de 1.644 IDs diferentes); Árvore/viaduto 7 × 9 IDs; Cruzamento 6 × 8 IDs.
 
 ## 6. Próximos passos atuais
 
 1. ~~Auditar notebooks e implementação Python~~ — feito (etapa 0).
 2. ~~Criar fixtures pequenas~~ — feito: 16 fixtures em `tests/fixtures/bytetrack/`.
-3. **Decisão da autora** sobre D1–D5 (alinhar ao Python ou rotular) e sobre a ordem correções × migração TS. Ver auditoria §6.
+3. ~~Decisão da autora sobre D1–D5~~ — alinhados (27/09/2026). D2 mantida.
 4. Migrar incrementalmente o visualizador para TypeScript, preservando o laboratório atual.
 5. Implementar a rota de curso guiado, a narrativa em sete capítulos e o inspetor de Supervision conforme o plano.
 6. Validar aula, acessibilidade, build e testes; registrar resultados antes de publicação.
@@ -144,3 +148,13 @@ Ver auditoria §6: alinhar D1/D3/D4/D5; D2 (XYXY) com risco de reintroduzir o pr
 
 ### Como continuar
 `cd visualizadores && npm ci && npm test` → esperar 16 ok / 7 todo. Para regenerar fixtures: auditoria §7.
+
+## 10. Sessão de alinhamento do motor — 27/09/2026
+
+Histórico: [docs/historico/2026-09-27-sessao-alinhamento-motor.md](docs/historico/2026-09-27-sessao-alinhamento-motor.md).
+
+- Motor: `src/visualizadores/bytetrack/bytetrack.js` (nova função exportada `quadrosMaximosPerdidos`).
+- UI: `id >= 0` em `metricas.js`, `ByteTrackVisualizador.jsx`, `Cena3D.jsx`, `Paineis.jsx`, `cores.js` (cor por `id % n`: mesma cor por ordem de emissão). Textos em `Paineis.jsx` e `parametros.js`.
+- Testes: `tests/fixtures-python.test.js` sem `todo`; IDs brutos e trilhas vivas. 18 fixtures.
+- Referências visuais atualizadas após revisão: `perspectiva-q120` (rótulos #0–#4, fórmula do buffer, mais etapa 2 na linha do tempo) e `impacto` (cobertura 89,1%, varredura começa em buffer 0).
+- Para o capítulo 5: explicar que o efeito do buffer depende da caixa prevista não encolher; no `trackers` 2.6.1 a mesma cena perde o ID.

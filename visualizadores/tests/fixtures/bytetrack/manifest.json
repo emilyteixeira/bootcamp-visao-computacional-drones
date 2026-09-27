@@ -22,6 +22,8 @@
   "etapa2-tentativa",
   "etapa2-perdida",
   "confirmacao-1-quadro",
+  "confirmacao-3-quadros",
+  "tentativa-sobrevive-min1",
   "ambiguidade-limiar",
   "kalman-oclusao"
  ]

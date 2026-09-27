@@ -107,6 +107,11 @@ def fixtures():
     q.append(executar("confirmacao-1-quadro", "minimum_consecutive_frames=1 com falso positivo de 1 quadro.",
                       [[det(100, 100, 0.9), det(400, 100, 0.9)], [det(100, 100, 0.9)], [det(100, 100, 0.9)]],
                       minimum_consecutive_frames=1))
+    q.append(executar("confirmacao-3-quadros", "minimum_consecutive_frames=3: ID no 3º quadro seguido.",
+                      [[det(100 + 4 * t, 100, 0.9)] for t in range(5)], minimum_consecutive_frames=3))
+    q.append(executar("tentativa-sobrevive-min1", "Com mínimo 1, tentativa sem par sobrevive um quadro.",
+                      [[det(100, 100, 0.9)], [], [det(100, 100, 0.9)], [], [], [det(100, 100, 0.9)]],
+                      minimum_consecutive_frames=1))
     # 12. Ambiguidade: limiar aplicado depois da atribuição ótima pode descartar um par válido.
     # IoU: A×d1 0,694; A×d2 0,337; B×d1 0,336; B×d2 0,036. A soma máxima escolhe A×d1 + B×d2 e
     # depois rejeita B×d2 (< 0,10), embora A×d2 + B×d1 fossem dois pares válidos.

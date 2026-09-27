@@ -41,7 +41,7 @@ Arquivos: `trackers/core/bytetrack/{tracker,tracklet,utils}.py`, `core/base.py`,
 
 ## 4. Matriz de diferenças (JS `bytetrack.js` × Python 2.6.1)
 
-Fixtures: `tests/fixtures/bytetrack/*.json` (16), geradas por `scripts/exportar-fixtures-bytetrack.py`. Comparação: `tests/fixtures-python.test.js`, IDs normalizados por ordem de emissão.
+Fixtures: `tests/fixtures/bytetrack/*.json` (16 na etapa 0; 18 após o alinhamento), geradas por `scripts/exportar-fixtures-bytetrack.py`. Comparação: `tests/fixtures-python.test.js`, IDs normalizados por ordem de emissão.
 
 | Cód. | Diferença | JS | Python 2.6.1 | Fixture | Impacto didático |
 |:--|:--|:--|:--|:--|:--|
@@ -67,16 +67,43 @@ Equivalências confirmadas (fixtures passam): nascimento, quadros vazios, limite
 | Plano §8 | Verificar se `associarPorIou` perde pares por limiar posterior | Perde, e o Python também: comportamento equivalente |
 | HANDOVER §1 | build:link ~1,2 MB | 1.679 KiB medidos |
 
-## 6. Decisões pendentes (da autora)
+## 6. Decisões da autora (27/09/2026)
 
-1. Alinhar D1, D3, D4, D5 ao Python antes da narrativa (etapa 3) ou manter e rotular como simplificação.
-2. D2: adotar XYXY do trackers 2.6.1 ou manter cx,cy,w,h rotulado. Risco: remover o congelamento de tamanho pode reintroduzir o problema 2 do HANDOVER §4 (IDs novos após o viaduto) — validar na cena `oclusao` com buffer 60.
-3. Ordem: correções do motor antes ou depois da migração TypeScript (o plano proíbe misturar as duas no mesmo commit, não define a ordem).
+1. **D1, D3, D4, D5: alinhados ao Python** (ver §8).
+2. **D2: mantida** e rotulada como simplificação na aba Conceito e no código.
+3. **Ordem:** correções do motor primeiro, em commit próprio; migração TypeScript depois, sem mudança de comportamento.
+4. **Público:** o do plano §1 (entende detecção, começa em tracking); nenhum capítulo encurtado; tudo explicado em detalhe.
+
+D6 e D7 não foram pedidos e continuam como estão (impacto nulo nos notebooks).
 
 ## 7. Como regenerar
 
 ```text
 python -m venv .venv && .venv/bin/pip install trackers==2.6.1 supervision==0.30.5 numpy==2.3.5
 .venv/bin/python scripts/exportar-fixtures-bytetrack.py   # reescreve tests/fixtures/bytetrack/
-npm test                                                  # 23 testes: 16 ok, 7 todo (D1, D3, D4, D5)
+npm test                                                  # após o alinhamento: 26 testes, 26 ok
 ```
+
+## 8. Alinhamento do motor (27/09/2026)
+
+`bytetrack.js` reescrito com a ordem do Python (§3): etapa 2 com todas as livres, ID a partir de 0 e nunca no nascimento, sobrevivência por `_get_alive_tracklets`, buffer por `quadrosMaximosPerdidos()` (mesma ordem de operações de ponto flutuante do Python). UI: `id > 0` → `id >= 0` em 6 arquivos; textos de Etapas, Parâmetros e Conceito atualizados; `lost_track_buffer` aceita 0.
+
+Teste endurecido: IDs **brutos** (sem normalização) e **trilhas vivas** `[tracker_id, quadros sem atualizar]` iguais ao Python em todos os quadros das 18 fixtures. Novas: `confirmacao-3-quadros`, `tentativa-sobrevive-min1`.
+
+| Código | Estado |
+|:--|:--|
+| D1, D3, D4, D5 | Alinhados; cobertos por fixtures |
+| D2 | Mantida (decisão da autora) |
+| D6, D7 | Sem mudança |
+
+### Impacto medido de D2 nas cenas completas (parâmetros do notebook 02)
+
+As detecções das cenas do laboratório foram passadas ao `ByteTrackTracker` real (script local, não versionado):
+
+| Cena | Detecções | IDs JS | IDs Python | tracker_id diferente |
+|:--|--:|--:|--:|--:|
+| Árvore e viaduto | 918 | 7 | 9 | 237 |
+| Ultrapassagem e cruzamento | 1.167 | 6 | 8 | 218 |
+| Drone alto | 1.644 | 10 | 10 | 0 |
+
+Causa verificada: no Python a caixa prevista de uma trilha perdida encolhe (ID 1 no quadro 100 → 107: largura 18,9 → 7,0 px), o IoU com a detecção cai a 0 e a trilha não é recuperada. É o mesmo mecanismo do problema 2 do HANDOVER §4, que no JS continua corrigido pelo congelamento de tamanho. Consequência para a aula: na cena “Árvore e viaduto”, `lost_track_buffer` 5/30/60 dá 9/9/9 IDs no Python e 9/7/5 no laboratório. O efeito do buffer mostrado no laboratório **é real no algoritmo, mas depende da previsão de tamanho**; o capítulo 5 deve dizer isso explicitamente.

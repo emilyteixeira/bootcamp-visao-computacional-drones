@@ -16,7 +16,7 @@ export function avaliar(cena, resultados) {
 
   resultados.forEach((res, t) => {
     const gts = cena.verdade[t].filter((g) => g.visivel > 0.05);
-    const tracks = res.trilhas.filter((tr) => tr.id > 0 && tr.semAtualizar === 0);
+    const tracks = res.trilhas.filter((tr) => tr.id >= 0 && tr.semAtualizar === 0);
     tracks.forEach((tr) => idsVistos.add(tr.id));
     gtTotal += gts.length;
     const m = associarPorIou(matrizIou(gts.map((g) => g.caixa), tracks.map((tr) => tr.caixa)), IOU_AVALIACAO, tracks.length);
@@ -46,7 +46,7 @@ export function avaliar(cena, resultados) {
       if (!cobertos.has(g.id) && estavaCoberto.get(g.id)) estavaCoberto.set(g.id, false);
       else if (cobertos.has(g.id)) estavaCoberto.set(g.id, true);
     }
-    res.log.etapa2.filter((e) => e.id > 0).forEach((e) => eventos.push({ quadro: t, tipo: 'etapa2', texto: `#${e.id} mantida pela etapa 2 (score ${e.score.toFixed(2)})` }));
+    res.log.etapa2.filter((e) => e.id >= 0).forEach((e) => eventos.push({ quadro: t, tipo: 'etapa2', texto: `#${e.id} mantida pela etapa 2 (score ${e.score.toFixed(2)})` }));
     res.log.confirmadas.forEach((id) => eventos.push({ quadro: t, tipo: 'nova', texto: `ID #${id} confirmado` }));
   });
 
