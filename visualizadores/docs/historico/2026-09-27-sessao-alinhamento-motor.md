@@ -17,3 +17,9 @@ Seguir as três sugestões da etapa 0: alinhar D1, D3, D4 e D5 ao `trackers` 2.6
 4. Testes visuais: 2 referências revisadas e atualizadas; 6/6 em 3 execuções.
 5. Auditoria §6/§8, HANDOVER (§1, §2, §3, §4, §5, §6, §10) e plano §11 atualizados.
 6. Migração TypeScript (etapa 1) em commit separado, sem mudança de comportamento.
+
+## Etapa 1 — TypeScript
+
+1. Commit 1a (`a64ad9a`): lógica pura em `.ts` strict, `tipos.ts`, tsconfig, testes com tsx, typecheck na CI.
+2. Commit 1b: componentes React em `.tsx`, `allowJs` removido, README atualizado.
+3. Verificado: typecheck 0 erros, 26/26, builds ok, 6/6 visuais sem alterar referências, calibração idêntica.

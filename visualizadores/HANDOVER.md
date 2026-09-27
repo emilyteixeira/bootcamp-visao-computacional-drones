@@ -2,7 +2,7 @@
 
 Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e24f`).
 
-> **Etapa 0 concluída** e **motor alinhado ao `trackers` 2.6.1** (D1, D3, D4, D5), conferido contra saídas reais do Python: ver [auditoria](docs/auditoria-bytetrack-etapa0.md) §8. D2 (Kalman) mantida como simplificação. Próximo: etapa 1 (TypeScript).
+> **Etapa 0 concluída** e **motor alinhado ao `trackers` 2.6.1** (D1, D3, D4, D5), conferido contra saídas reais do Python: ver [auditoria](docs/auditoria-bytetrack-etapa0.md) §8. D2 (Kalman) mantida como simplificação. **Etapa 1 concluída:** todo `src/` e os testes de lógica em TypeScript strict. Próximo: etapa 2 (estrutura do curso, rota `#curso-bytetrack`).
 
 > O curso guiado e a migração TypeScript estão planejados, ainda não implementados. Consulte o [plano completo](docs/plano-curso-bytetrack-supervision.md). Os registros de publicação abaixo descrevem a sessão anterior; não são uma nova verificação de deploy.
 
@@ -11,7 +11,8 @@ Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e
 | Item | Estado |
 |:--|:--|
 | Módulo ByteTrack | Pronto e publicado em https://claude.ai/artifact/VwfuEtPjrsJmJoM7Y8AX4j (privado até ser compartilhado) |
-| Testes | `npm test`: 26/26 (5 originais + 18 fixtures Python + 3 de buffer/Kalman). `npm run test:visual`: 6/6 em 3 execuções seguidas, com 2 referências atualizadas após revisão (27/09/2026) |
+| Typecheck | `npm run typecheck` (tsc 7.0.2, strict, sem `allowJs`): 0 erros. Roda na CI antes de `npm test` |
+| Testes | `npm test` (tsx + node:test): 26/26 (5 originais + 18 fixtures Python + 3 de buffer/Kalman). `npm run test:visual`: 6/6 em 3 execuções seguidas, com 2 referências atualizadas após revisão (27/09/2026) |
 | GitHub Pages | Publicado em https://emilyteixeira.github.io/bootcamp-visao-computacional-drones/#bytetrack (run 36253508693, deploy às 15:55 UTC de 26/09/2026). Cada push na `main` que altere `visualizadores/` republica |
 | `useblender-cli` | Cancelada pela autora em 26/09/2026. O visual continua com R3F e drei |
 | Build | `npm run build:link`: arquivo único de 1.679 KiB (medido na etapa 0; o valor anterior de ~1,2 MB estava desatualizado) |
@@ -21,7 +22,7 @@ Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e
 
 | Decisão | Motivo |
 |:--|:--|
-| Vite + React 19 + R3F 9 + drei 10 + three 0.186 | Stack existente preservada. A decisão anterior de permanecer sem TypeScript foi substituída pelo pedido explícito de React + TypeScript em 26/09/2026; migração pendente |
+| Vite + React 19 + R3F 9 + drei 10 + three 0.186 + TypeScript 7 | Stack preservada; TypeScript por pedido da autora (26/09/2026), migração concluída em 27/09/2026. Imports com extensão explícita (`.ts`/`.tsx`, `allowImportingTsExtensions`) |
 | Build em arquivo único (`vite-plugin-singlefile`) | O publicador de Artifacts só aceita scripts de CDNs permitidos. Com tudo embutido, não há dependência de CDN |
 | O tracker é reimplementado em JS e não chama o Python | Precisa rodar no navegador e responder aos controles na hora. Uma varredura de 14 valores leva cerca de 200 ms |
 | Nomes e semântica de `trackers.ByteTrackTracker` (trackers==2.6.1) | São os usados em `projeto-3/02_tracking.ipynb` e `03_projeto_final.ipynb`. `sv.ByteTrack` aparece só como mapeamento. Associação e ciclo de vida alinhados e verificados por fixtures (27/09/2026) |
@@ -75,7 +76,7 @@ Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baix
 1. ~~Auditar notebooks e implementação Python~~ — feito (etapa 0).
 2. ~~Criar fixtures pequenas~~ — feito: 16 fixtures em `tests/fixtures/bytetrack/`.
 3. ~~Decisão da autora sobre D1–D5~~ — alinhados (27/09/2026). D2 mantida.
-4. Migrar incrementalmente o visualizador para TypeScript, preservando o laboratório atual.
+4. ~~Migrar para TypeScript~~ — feito (27/09/2026), sem mudança de comportamento. Pendente opcional: `tests/visual/*.spec.js` e `playwright.config.js` seguem em JS.
 5. Implementar a rota de curso guiado, a narrativa em sete capítulos e o inspetor de Supervision conforme o plano.
 6. Validar aula, acessibilidade, build e testes; registrar resultados antes de publicação.
 
@@ -83,7 +84,7 @@ As vagas Kalman, LineZone e homografia continuam reservadas, mas a prioridade at
 
 ## 7. Como retomar em 5 minutos
 
-`cd visualizadores && npm install && npm test && npm run dev`, depois abra `http://localhost:5173/#bytetrack`. Para republicar, rode `npm run build:link` e publique `dist-link/laboratorio-bytetrack.html` no mesmo URL do Artifact.
+`cd visualizadores && npm ci && npm run typecheck && npm test && npm run dev`, depois abra `http://localhost:5173/#bytetrack`. Para republicar, rode `npm run build:link` e publique `dist-link/laboratorio-bytetrack.html` no mesmo URL do Artifact.
 
 ## 8. Sessão de planejamento do curso — 26/09/2026
 
@@ -158,3 +159,11 @@ Histórico: [docs/historico/2026-09-27-sessao-alinhamento-motor.md](docs/histori
 - Testes: `tests/fixtures-python.test.js` sem `todo`; IDs brutos e trilhas vivas. 18 fixtures.
 - Referências visuais atualizadas após revisão: `perspectiva-q120` (rótulos #0–#4, fórmula do buffer, mais etapa 2 na linha do tempo) e `impacto` (cobertura 89,1%, varredura começa em buffer 0).
 - Para o capítulo 5: explicar que o efeito do buffer depende da caixa prevista não encolher; no `trackers` 2.6.1 a mesma cena perde o ID.
+
+## 11. Etapa 1 — migração TypeScript — 27/09/2026
+
+- Commits: `a64ad9a` (1a: lógica em `.ts`, `tipos.ts`, tsconfig, tsx) e o commit 1b (componentes `.tsx`, `registro.ts`, `usarReproducao.ts`, `main.tsx`; `allowJs` removido).
+- Contratos em `src/visualizadores/bytetrack/tipos.ts`: `ParametrosByteTrack`, `Deteccao`, `TrackSnapshot`, `LogQuadro`, `Instantaneo`, `Cenario`, `Cena`, `Metricas`, `Camadas`.
+- Única mudança interna: `atualizar()` copia as detecções de entrada em vez de mutá-las (sem efeito observável; `executar` já passava cópias).
+- Verificação: typecheck 0 erros; 26/26; build e build:link (1.680 KiB); 6/6 visuais **sem atualizar referências**; calibração do §5 idêntica antes/depois.
+- Dependências novas (dev): `typescript@7.0.2`, `tsx@4.23.15`, `@types/react`, `@types/react-dom` 19.3, `@types/three` 0.186, `@types/node` 22.

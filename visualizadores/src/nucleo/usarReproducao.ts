@@ -1,7 +1,16 @@
 // Relógio de reprodução quadro a quadro (play/pausa, velocidade, laço), estilo linha do tempo do Blender.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
-export function usarReproducao(totalQuadros, fps = 30) {
+export interface Reproducao {
+  quadro: number;
+  irPara: (q: number) => void;
+  tocando: boolean;
+  setTocando: Dispatch<SetStateAction<boolean>>;
+  velocidade: number;
+  setVelocidade: Dispatch<SetStateAction<number>>;
+}
+
+export function usarReproducao(totalQuadros: number, fps = 30): Reproducao {
   const [quadro, setQuadro] = useState(0);
   const [tocando, setTocando] = useState(true);
   const [velocidade, setVelocidade] = useState(0.5);
@@ -9,9 +18,9 @@ export function usarReproducao(totalQuadros, fps = 30) {
 
   useEffect(() => {
     if (!tocando) return;
-    let id;
+    let id = 0;
     let anterior = performance.now();
-    const passo = (agora) => {
+    const passo = (agora: number) => {
       acumulado.current += ((agora - anterior) / 1000) * fps * velocidade;
       anterior = agora;
       if (acumulado.current >= 1) {
@@ -25,12 +34,12 @@ export function usarReproducao(totalQuadros, fps = 30) {
     return () => cancelAnimationFrame(id);
   }, [tocando, velocidade, fps, totalQuadros]);
 
-  const irPara = useCallback((q) => setQuadro(Math.max(0, Math.min(totalQuadros - 1, q))), [totalQuadros]);
+  const irPara = useCallback((q: number) => setQuadro(Math.max(0, Math.min(totalQuadros - 1, q))), [totalQuadros]);
 
   // Atalhos do Blender: Espaço = play/pausa, ←/→ = quadro, Shift+← = início.
   useEffect(() => {
-    const aoTeclar = (e) => {
-      if (e.target.closest('input, select, textarea, button')) return;
+    const aoTeclar = (e: KeyboardEvent) => {
+      if ((e.target as Element | null)?.closest('input, select, textarea, button')) return;
       if (e.code === 'Space') { e.preventDefault(); setTocando((t) => !t); }
       if (e.key === 'ArrowRight') { setTocando(false); setQuadro((q) => Math.min(totalQuadros - 1, q + 1)); }
       if (e.key === 'ArrowLeft') { setTocando(false); setQuadro((q) => (e.shiftKey ? 0 : Math.max(0, q - 1))); }

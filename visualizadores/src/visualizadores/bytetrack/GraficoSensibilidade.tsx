@@ -1,16 +1,39 @@
 // Varredura de um parâmetro (demais fixos) sobre a mesma cena: mostra o impacto isolado.
-import { useState } from 'react';
+import { useState, type PointerEvent, type ReactNode } from 'react';
+import type { Metricas } from './tipos.ts';
+
+// Um ponto da varredura: valor do parâmetro (v) e as métricas numéricas obtidas com ele.
+type PontoVarredura = { v: number } & Omit<Metricas, 'eventos'>;
+type ChaveSerie = 'idsCriados' | 'trocasId' | 'cobertura';
+
+interface Serie {
+  chave: ChaveSerie;
+  rotulo: string;
+  cor: string;
+}
+
+interface PropsGrafico {
+  inteiro: boolean;
+  titulo: string;
+  valores: PontoVarredura[];
+  series: Serie[];
+  referencia?: { valor: number; rotulo: string };
+  atual: number;
+  formatarY: (v: number) => ReactNode;
+  maxY: number;
+  rotuloX: string;
+}
 
 const L = 320, A = 150, M = { e: 34, d: 12, t: 12, b: 26 };
 
-function Grafico({ inteiro, titulo, valores, series, referencia, atual, formatarY, maxY, rotuloX }) {
-  const [foco, setFoco] = useState(null);
+function Grafico({ inteiro, titulo, valores, series, referencia, atual, formatarY, maxY, rotuloX }: PropsGrafico) {
+  const [foco, setFoco] = useState<number | null>(null);
   const xs = valores.map((p) => p.v);
   const x0 = Math.min(...xs), x1 = Math.max(...xs);
-  const sx = (v) => M.e + ((v - x0) / (x1 - x0 || 1)) * (L - M.e - M.d);
-  const sy = (v) => A - M.b - (v / maxY) * (A - M.t - M.b);
+  const sx = (v: number) => M.e + ((v - x0) / (x1 - x0 || 1)) * (L - M.e - M.d);
+  const sy = (v: number) => A - M.b - (v / maxY) * (A - M.t - M.b);
   const ticksY = [0, maxY / 2, maxY];
-  const aoMover = (e) => {
+  const aoMover = (e: PointerEvent<SVGSVGElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width) * L;
     let melhor = 0;
@@ -72,7 +95,15 @@ function Grafico({ inteiro, titulo, valores, series, referencia, atual, formatar
   );
 }
 
-export default function GraficoSensibilidade({ varredura, atual, veiculos, rotuloX, inteiro }) {
+interface PropsGraficoSensibilidade {
+  varredura: PontoVarredura[];
+  atual: number;
+  veiculos: number;
+  rotuloX: string;
+  inteiro: boolean;
+}
+
+export default function GraficoSensibilidade({ varredura, atual, veiculos, rotuloX, inteiro }: PropsGraficoSensibilidade) {
   const maxIds = Math.max(veiculos + 2, ...varredura.map((p) => Math.max(p.idsCriados, p.trocasId)));
   const teto = Math.ceil(maxIds / 5) * 5;
   const pontos = varredura.map((p) => ({ ...p, cobertura: p.cobertura * 100 }));

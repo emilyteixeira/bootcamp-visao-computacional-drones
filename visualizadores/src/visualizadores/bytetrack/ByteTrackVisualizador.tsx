@@ -1,24 +1,27 @@
 // Visualizador ByteTrack: cena 3D + linha do tempo + painéis didáticos.
-import { useMemo, useRef, useState } from 'react';
-import Viewport3D, { VISTAS } from '../../nucleo/Viewport3D.jsx';
-import LinhaDoTempo from '../../nucleo/ui/LinhaDoTempo.jsx';
-import { usarReproducao } from '../../nucleo/usarReproducao.js';
-import { CENARIOS, gerarCena } from './cenarios.ts';
+import { useMemo, useRef, useState, type CSSProperties } from 'react';
+import Viewport3D, { VISTAS, type ControleViewport, type NomeVista } from '../../nucleo/Viewport3D.tsx';
+import LinhaDoTempo, { type Faixa } from '../../nucleo/ui/LinhaDoTempo.tsx';
+import { usarReproducao } from '../../nucleo/usarReproducao.ts';
+import { CENARIOS, gerarCena, type IdCenario } from './cenarios.ts';
 import { executar } from './bytetrack.ts';
 import { avaliar } from './metricas.ts';
 import { PREDEFINICOES } from './parametros.ts';
 import { COR_ETAPA } from './cores.ts';
-import Cena3D from './Cena3D.jsx';
-import { PainelConceito, PainelImpacto, PainelParametros, PainelQuadro } from './Paineis.jsx';
+import Cena3D from './Cena3D.tsx';
+import { PainelConceito, PainelImpacto, PainelParametros, PainelQuadro } from './Paineis.tsx';
+import type { Camadas, Instantaneo, ParametrosByteTrack } from './tipos.ts';
 
-const ABAS = [
+type IdAba = 'parametros' | 'quadro' | 'impacto' | 'conceito';
+
+const ABAS: { id: IdAba; rotulo: string }[] = [
   { id: 'parametros', rotulo: 'Parâmetros' },
   { id: 'quadro', rotulo: 'Etapas' },
   { id: 'impacto', rotulo: 'Impacto' },
   { id: 'conceito', rotulo: 'Conceito' },
 ];
 
-const CAMADAS = [
+const CAMADAS: { id: keyof Camadas; rotulo: string }[] = [
   { id: 'verdade', rotulo: 'Veículos reais' },
   { id: 'deteccoes', rotulo: 'Detecções' },
   { id: 'trilhas', rotulo: 'Trilhas' },
@@ -36,11 +39,11 @@ const LEGENDA = [
   { cor: COR_ETAPA['sem-ativacao'], texto: 'Alta sem ativação', estilo: 'tracejado' },
 ];
 
-function faixasEtapa2(resultados) {
-  const faixas = [];
-  let inicio = null;
+function faixasEtapa2(resultados: Instantaneo[]): Faixa[] {
+  const faixas: Faixa[] = [];
+  let inicio: number | null = null;
   resultados.forEach((r, t) => {
-    const tem = r.log.etapa2.some((e) => e.id >= 0);
+    const tem = r.log.etapa2.some((e) => (e.id ?? -1) >= 0);
     if (tem && inicio === null) inicio = t;
     if ((!tem || t === resultados.length - 1) && inicio !== null) {
       faixas.push({ chave: inicio, inicio, fim: tem ? t : t - 1, classe: 'etapa2', texto: 'Etapa 2 mantendo trilhas' });
@@ -51,12 +54,12 @@ function faixasEtapa2(resultados) {
 }
 
 export default function ByteTrackVisualizador() {
-  const [cenarioId, setCenarioId] = useState('oclusao');
+  const [cenarioId, setCenarioId] = useState<IdCenario>('oclusao');
   const [semente, setSemente] = useState(0);
-  const [parametros, setParametros] = useState({ ...PREDEFINICOES[0].valores });
-  const [aba, setAba] = useState('parametros');
-  const [camadas, setCamadas] = useState({ verdade: true, deteccoes: true, trilhas: true, scores: false, descartadas: false, raioX: false, espacoTempo: false });
-  const viewport = useRef();
+  const [parametros, setParametros] = useState<ParametrosByteTrack>({ ...PREDEFINICOES[0].valores });
+  const [aba, setAba] = useState<IdAba>('parametros');
+  const [camadas, setCamadas] = useState<Camadas>({ verdade: true, deteccoes: true, trilhas: true, scores: false, descartadas: false, raioX: false, espacoTempo: false });
+  const viewport = useRef<ControleViewport>(null);
 
   const cenario = CENARIOS[cenarioId];
   const cena = useMemo(() => gerarCena(cenario, cenario.semente + semente), [cenario, semente]);
@@ -68,7 +71,7 @@ export default function ByteTrackVisualizador() {
   const marcadores = useMemo(() => metricas.eventos.filter((e) => e.tipo === 'nova' || e.tipo === 'troca'), [metricas]);
   const faixas = useMemo(() => faixasEtapa2(resultados), [resultados]);
 
-  const alternarCamada = (id) => {
+  const alternarCamada = (id: keyof Camadas) => {
     setCamadas((c) => ({ ...c, [id]: !c[id] }));
     if (id === 'espacoTempo' && !camadas.espacoTempo) viewport.current?.irPara('perspectiva');
   };
@@ -86,7 +89,7 @@ export default function ByteTrackVisualizador() {
           </div>
           <div className="segmentado" role="group" aria-label="Cenário">
             {Object.values(CENARIOS).map((c) => (
-              <button key={c.id} type="button" className={c.id === cenarioId ? 'ativo' : ''} onClick={() => { setCenarioId(c.id); rep.irPara(0); }}>
+              <button key={c.id} type="button" className={c.id === cenarioId ? 'ativo' : ''} onClick={() => { setCenarioId(c.id as IdCenario); rep.irPara(0); }}>
                 {c.titulo}
               </button>
             ))}
@@ -105,7 +108,7 @@ export default function ByteTrackVisualizador() {
             <span><b className="mono">{res.log.etapa2.length}</b> pela etapa 2</span>
           </div>
           <div className="hud hud-vistas" role="group" aria-label="Vistas da câmera">
-            {Object.entries(VISTAS).map(([k, v]) => (
+            {(Object.entries(VISTAS) as [NomeVista, (typeof VISTAS)[NomeVista]][]).map(([k, v]) => (
               <button key={k} type="button" onClick={() => viewport.current?.irPara(k)} title={`Tecla ${v.tecla}`}>
                 <kbd>{v.tecla}</kbd> {v.rotulo}
               </button>
@@ -113,7 +116,7 @@ export default function ByteTrackVisualizador() {
           </div>
           <ul className="hud hud-legenda" aria-label="Legenda">
             {LEGENDA.map((l) => (
-              <li key={l.texto}><i className={l.estilo} style={{ '--cor': l.cor }} />{l.texto}</li>
+              <li key={l.texto}><i className={l.estilo} style={{ '--cor': l.cor } as CSSProperties} />{l.texto}</li>
             ))}
             <li><i className="trilha" />Trilha (cor = ID)</li>
           </ul>

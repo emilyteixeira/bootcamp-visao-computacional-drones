@@ -1,22 +1,40 @@
 // Cena 3D do ByteTrack: solo com a via, oclusores físicos, veículos reais (verdade de solo)
 // e as sobreposições de anotação (detecções e trilhas) desenhadas por cima, como na imagem do drone.
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
-import { pxParaMundo, ESCALA } from '../../nucleo/Viewport3D.jsx';
+import { pxParaMundo, ESCALA } from '../../nucleo/Viewport3D.tsx';
 import { LARGURA, ALTURA } from './cenarios.ts';
 import { COR_ETAPA, corDoId } from './cores.ts';
+import type { Caixa, Camadas, Cena, Cenario, GtNoQuadro, Instantaneo, Oclusor as DadosOclusor } from './tipos.ts';
+
+type Ponto3 = [number, number, number];
+
+interface Segmento {
+  tipo: 'obs' | 'prev';
+  pontos: Ponto3[];
+  fim: number;
+}
 
 const PASSO_TEMPO = 0.025; // altura por quadro no modo espaço-tempo (240 quadros → 6 unidades)
 const Y_ANOTACAO = 0.34;
 
-function retangulo(caixa, y) {
+function retangulo(caixa: Caixa, y: number): Ponto3[] {
   const [x1, z1] = pxParaMundo(caixa[0], caixa[1]);
   const [x2, z2] = pxParaMundo(caixa[2], caixa[3]);
   return [[x1, y, z1], [x2, y, z1], [x2, y, z2], [x1, y, z2], [x1, y, z1]];
 }
 
-function Retangulo({ caixa, y, cor, espessura = 1.5, tracejado = false, opacidade = 1 }) {
+interface PropsRetangulo {
+  caixa: Caixa;
+  y: number;
+  cor: string;
+  espessura?: number;
+  tracejado?: boolean;
+  opacidade?: number;
+}
+
+function Retangulo({ caixa, y, cor, espessura = 1.5, tracejado = false, opacidade = 1 }: PropsRetangulo) {
   return (
     <Line
       points={retangulo(caixa, y)}
@@ -34,17 +52,17 @@ function Retangulo({ caixa, y, cor, espessura = 1.5, tracejado = false, opacidad
 }
 
 // Textura do solo desenhada em canvas: grama, asfalto e faixas.
-function usarTexturaSolo(estrada) {
+function usarTexturaSolo(estrada: Cenario['estrada']) {
   return useMemo(() => {
     const c = document.createElement('canvas');
     c.width = LARGURA; c.height = ALTURA;
-    const g = c.getContext('2d');
+    const g = c.getContext('2d')!;
     g.fillStyle = '#56663f'; g.fillRect(0, 0, LARGURA, ALTURA);
     for (let i = 0; i < 2600; i++) {
       g.fillStyle = `rgba(${30 + (i % 40)},${60 + (i % 50)},${20 + (i % 30)},0.25)`;
       g.fillRect((i * 97) % LARGURA, (i * 53) % ALTURA, 6, 6);
     }
-    const via = (x, y, w, h) => { g.fillStyle = '#3b3c3f'; g.fillRect(x, y, w, h); };
+    const via = (x: number, y: number, w: number, h: number) => { g.fillStyle = '#3b3c3f'; g.fillRect(x, y, w, h); };
     via(0, 272, LARGURA, 206);
     if (estrada === 'cruz') via(600, 0, 140, ALTURA);
     g.strokeStyle = '#e8e8e8'; g.lineWidth = 3;
@@ -60,7 +78,7 @@ function usarTexturaSolo(estrada) {
   }, [estrada]);
 }
 
-function Solo({ estrada }) {
+function Solo({ estrada }: { estrada: Cenario['estrada'] }) {
   const textura = usarTexturaSolo(estrada);
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]}>
@@ -70,7 +88,7 @@ function Solo({ estrada }) {
   );
 }
 
-function Oclusor({ o, raioX }) {
+function Oclusor({ o, raioX }: { o: DadosOclusor; raioX: boolean }) {
   const [x1, z1] = pxParaMundo(o.caixa[0], o.caixa[1]);
   const [x2, z2] = pxParaMundo(o.caixa[2], o.caixa[3]);
   const cx = (x1 + x2) / 2, cz = (z1 + z2) / 2, w = x2 - x1, d = z2 - z1;
@@ -111,7 +129,7 @@ function Oclusor({ o, raioX }) {
   );
 }
 
-function Veiculo({ g }) {
+function Veiculo({ g }: { g: GtNoQuadro }) {
   const [x1, z1] = pxParaMundo(g.caixa[0], g.caixa[1]);
   const [x2, z2] = pxParaMundo(g.caixa[2], g.caixa[3]);
   const w = x2 - x1, d = z2 - z1;
@@ -130,20 +148,20 @@ function Veiculo({ g }) {
   );
 }
 
-function trajetorias(resultados, ate) {
+function trajetorias(resultados: Instantaneo[], ate: number): Map<number, Segmento[]> {
   // Para cada tracker_id confirmado: segmentos contínuos observados e segmentos só previstos.
-  const porId = new Map();
+  const porId = new Map<number, Segmento[]>();
   for (let t = 0; t <= ate; t++) {
     for (const tr of resultados[t].trilhas) {
       if (tr.id < 0) continue;
       const [x, z] = pxParaMundo((tr.caixa[0] + tr.caixa[2]) / 2, (tr.caixa[1] + tr.caixa[3]) / 2);
-      const tipo = tr.semAtualizar === 0 ? 'obs' : 'prev';
+      const tipo: Segmento['tipo'] = tr.semAtualizar === 0 ? 'obs' : 'prev';
       if (!porId.has(tr.id)) porId.set(tr.id, []);
-      const segs = porId.get(tr.id);
+      const segs = porId.get(tr.id)!;
       const ultimo = segs[segs.length - 1];
-      const ponto = [x, t * PASSO_TEMPO, z];
+      const ponto: Ponto3 = [x, t * PASSO_TEMPO, z];
       if (!ultimo || ultimo.tipo !== tipo || ultimo.fim !== t - 1) {
-        const novo = { tipo, pontos: ultimo && ultimo.fim === t - 1 ? [ultimo.pontos[ultimo.pontos.length - 1]] : [], fim: t };
+        const novo: Segmento = { tipo, pontos: ultimo && ultimo.fim === t - 1 ? [ultimo.pontos[ultimo.pontos.length - 1]] : [], fim: t };
         segs.push(novo);
       }
       const seg = segs[segs.length - 1];
@@ -154,19 +172,27 @@ function trajetorias(resultados, ate) {
   return porId;
 }
 
-function trajetoriasVerdade(verdade, ate) {
-  const porId = new Map();
+function trajetoriasVerdade(verdade: GtNoQuadro[][], ate: number): Map<number, Ponto3[]> {
+  const porId = new Map<number, Ponto3[]>();
   for (let t = 0; t <= ate; t++) {
     for (const g of verdade[t]) {
       const [x, z] = pxParaMundo((g.caixa[0] + g.caixa[2]) / 2, (g.caixa[1] + g.caixa[3]) / 2);
       if (!porId.has(g.id)) porId.set(g.id, []);
-      porId.get(g.id).push([x, t * PASSO_TEMPO, z]);
+      porId.get(g.id)!.push([x, t * PASSO_TEMPO, z]);
     }
   }
   return porId;
 }
 
-export default function Cena3D({ cenario, cena, resultados, quadro, camadas }) {
+interface PropsCena3D {
+  cenario: Cenario;
+  cena: Cena;
+  resultados: Instantaneo[];
+  quadro: number;
+  camadas: Camadas;
+}
+
+export default function Cena3D({ cenario, cena, resultados, quadro, camadas }: PropsCena3D) {
   const res = resultados[quadro];
   const yAnot = camadas.espacoTempo ? quadro * PASSO_TEMPO + 0.02 : Y_ANOTACAO;
   const trajs = useMemo(() => (camadas.espacoTempo ? trajetorias(resultados, quadro) : null), [camadas.espacoTempo, resultados, quadro]);
@@ -187,7 +213,7 @@ export default function Cena3D({ cenario, cena, resultados, quadro, camadas }) {
           <Retangulo
             caixa={d.caixa}
             y={yAnot}
-            cor={COR_ETAPA[d.etapa] ?? COR_ETAPA.descartada}
+            cor={d.etapa != null ? COR_ETAPA[d.etapa] : COR_ETAPA.descartada}
             espessura={d.etapa === 1 ? 1.6 : 1.3}
             tracejado={d.etapa !== 1}
             opacidade={d.etapa === 'descartada' ? 0.55 : 0.95}
@@ -206,8 +232,8 @@ export default function Cena3D({ cenario, cena, resultados, quadro, camadas }) {
         const [lx, lz] = pxParaMundo(t.caixa[0], t.caixa[1]);
         return (
           <group key={`t${t.interno}`}>
-            <Retangulo caixa={t.caixa.map((v, k) => v + (k < 2 ? -4 : 4))} y={yAnot + 0.01} cor={cor} espessura={t.id >= 0 ? 3 : 1.2} tracejado={perdida || t.id < 0} opacidade={perdida ? 0.8 : 1} />
-            <Html position={[lx, yAnot, lz]} className={`rotulo-trilha ${perdida ? 'perdida' : ''}`} style={{ '--cor': cor }} zIndexRange={[20, 10]}>
+            <Retangulo caixa={t.caixa.map((v, k) => v + (k < 2 ? -4 : 4)) as Caixa} y={yAnot + 0.01} cor={cor} espessura={t.id >= 0 ? 3 : 1.2} tracejado={perdida || t.id < 0} opacidade={perdida ? 0.8 : 1} />
+            <Html position={[lx, yAnot, lz]} className={`rotulo-trilha ${perdida ? 'perdida' : ''}`} style={{ '--cor': cor } as CSSProperties} zIndexRange={[20, 10]}>
               {t.id >= 0 ? `#${t.id}` : 'tentativa'}
               {perdida && <small> perdida {t.semAtualizar}/{t.maxPerdido}</small>}
             </Html>
@@ -224,7 +250,7 @@ export default function Cena3D({ cenario, cena, resultados, quadro, camadas }) {
           {trajsGt && [...trajsGt.entries()].map(([id, pts]) => pts.length > 1 && (
             <Line key={`g${id}`} points={pts} color="#9aa0a8" lineWidth={1} transparent opacity={0.5} />
           ))}
-          {[...trajs.entries()].flatMap(([id, segs]) => segs.filter((s) => s.pontos.length > 1).map((s, i) => (
+          {trajs && [...trajs.entries()].flatMap(([id, segs]) => segs.filter((s) => s.pontos.length > 1).map((s, i) => (
             <Line key={`s${id}-${i}`} points={s.pontos} color={corDoId(id)} lineWidth={s.tipo === 'obs' ? 3 : 1.5} dashed={s.tipo === 'prev'} dashSize={0.05} gapSize={0.05} />
           )))}
         </group>

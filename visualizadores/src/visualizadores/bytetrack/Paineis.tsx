@@ -1,20 +1,26 @@
 // Painéis laterais do visualizador ByteTrack: parâmetros, quadro atual, impacto e conceito.
-import { useMemo, useState } from 'react';
-import Controle from '../../nucleo/ui/Controle.jsx';
+import { useMemo, useState, type CSSProperties, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import Controle from '../../nucleo/ui/Controle.tsx';
 import { PARAMETROS, PREDEFINICOES, valoresVarredura } from './parametros.ts';
 import { executar, quadrosMaximosPerdidos } from './bytetrack.ts';
 import { avaliar } from './metricas.ts';
-import GraficoSensibilidade from './GraficoSensibilidade.jsx';
+import GraficoSensibilidade from './GraficoSensibilidade.tsx';
 import { COR_ETAPA, corDoId } from './cores.ts';
-import { iou } from '../../nucleo/geometria.ts';
+import { iou, type Caixa } from '../../nucleo/geometria.ts';
+import type { Cena, ChaveParametro, Instantaneo, Metricas, ParametrosByteTrack } from './tipos.ts';
 
-const fmt = (v, passo) => (passo >= 1 ? String(v) : v.toFixed(2));
+const fmt = (v: number, passo: number) => (passo >= 1 ? String(v) : v.toFixed(2));
 
-export function PainelParametros({ parametros, setParametros }) {
-  const alterar = (chave, v) => setParametros((p) => ({ ...p, [chave]: v }));
-  const ativa = PREDEFINICOES.find((pr) => Object.entries(pr.valores).every(([k, v]) => parametros[k] === v));
+interface PropsPainelParametros {
+  parametros: ParametrosByteTrack;
+  setParametros: Dispatch<SetStateAction<ParametrosByteTrack>>;
+}
+
+export function PainelParametros({ parametros, setParametros }: PropsPainelParametros) {
+  const alterar = (chave: ChaveParametro, v: number) => setParametros((p) => ({ ...p, [chave]: v }));
+  const ativa = PREDEFINICOES.find((pr) => Object.entries(pr.valores).every(([k, v]) => parametros[k as ChaveParametro] === v));
   const maxPerdido = quadrosMaximosPerdidos(parametros);
-  const avisos = [];
+  const avisos: string[] = [];
   if (parametros.limiar_detector >= parametros.high_conf_det_threshold)
     avisos.push('Limiar do detector ≥ limiar alta × baixa: nenhuma detecção baixa chega ao tracker e a etapa 2 fica vazia.');
   if (parametros.track_activation_threshold <= parametros.high_conf_det_threshold)
@@ -60,7 +66,15 @@ export function PainelParametros({ parametros, setParametros }) {
   );
 }
 
-function Passo({ n, titulo, cor, contagem, children }) {
+interface PropsPasso {
+  n: string;
+  titulo: string;
+  cor?: string;
+  contagem?: number;
+  children?: ReactNode;
+}
+
+function Passo({ n, titulo, cor, contagem, children }: PropsPasso) {
   return (
     <li className="passo">
       <span className="passo-n" style={cor ? { background: cor } : undefined}>{n}</span>
@@ -72,9 +86,9 @@ function Passo({ n, titulo, cor, contagem, children }) {
   );
 }
 
-const Id = ({ id }) => <span className="id-chip" style={{ '--cor': corDoId(id) }}>{id >= 0 ? `#${id}` : 'tent.'}</span>;
+const Id = ({ id }: { id: number }) => <span className="id-chip" style={{ '--cor': corDoId(id) } as CSSProperties}>{id >= 0 ? `#${id}` : 'tent.'}</span>;
 
-export function PainelQuadro({ res, quadro, parametros }) {
+export function PainelQuadro({ res, quadro, parametros }: { res: Instantaneo; quadro: number; parametros: ParametrosByteTrack }) {
   const { log } = res;
   const altas = res.deteccoes.filter((d) => d.score >= parametros.high_conf_det_threshold).length;
   const baixas = res.deteccoes.length - altas;
@@ -94,12 +108,12 @@ export function PainelQuadro({ res, quadro, parametros }) {
         </Passo>
         <Passo n="3" titulo="Etapa 1 · altas × todas as trilhas" cor={COR_ETAPA[1]} contagem={log.etapa1.length}>
           <ul className="pares">
-            {log.etapa1.map((e) => <li key={e.trilha}><Id id={e.id} /> ← score {e.score.toFixed(2)} · IoU {e.iou.toFixed(2)}{e.recuperada && <em> reencontrada</em>}</li>)}
+            {log.etapa1.map((e) => <li key={e.trilha}><Id id={e.id ?? -1} /> ← score {e.score.toFixed(2)} · IoU {e.iou.toFixed(2)}{e.recuperada && <em> reencontrada</em>}</li>)}
           </ul>
         </Passo>
         <Passo n="4" titulo="Etapa 2 · baixas × trilhas livres da etapa 1" cor={COR_ETAPA[2]} contagem={log.etapa2.length}>
           <ul className="pares">
-            {log.etapa2.map((e) => <li key={e.trilha}><Id id={e.id} /> ← score {e.score.toFixed(2)} · IoU {e.iou.toFixed(2)}{e.recuperada && <em> reencontrada</em>}</li>)}
+            {log.etapa2.map((e) => <li key={e.trilha}><Id id={e.id ?? -1} /> ← score {e.score.toFixed(2)} · IoU {e.iou.toFixed(2)}{e.recuperada && <em> reencontrada</em>}</li>)}
           </ul>
           {log.baixasSemPar.length > 0 && <p>{log.baixasSemPar.length} baixa(s) sem par ignoradas: baixa nunca cria trilha.</p>}
         </Passo>
@@ -120,28 +134,39 @@ export function PainelQuadro({ res, quadro, parametros }) {
   );
 }
 
-const CARTOES = [
+type ChaveCartao = 'veiculos' | 'idsCriados' | 'trocasId' | 'cobertura' | 'falsosPositivos' | 'atrasoMedio';
+
+interface Cartao {
+  chave: ChaveCartao;
+  rotulo: string;
+  f: (v: number | null) => ReactNode;
+  melhor?: 'perto' | 'menor' | 'maior';
+}
+
+const CARTOES: Cartao[] = [
   { chave: 'veiculos', rotulo: 'Veículos reais', f: (v) => v },
   { chave: 'idsCriados', rotulo: 'IDs criados', f: (v) => v, melhor: 'perto' },
   { chave: 'trocasId', rotulo: 'Trocas de ID', f: (v) => v, melhor: 'menor' },
-  { chave: 'cobertura', rotulo: 'Cobertura', f: (v) => `${(v * 100).toFixed(1)}%`, melhor: 'maior' },
+  { chave: 'cobertura', rotulo: 'Cobertura', f: (v) => `${((v ?? 0) * 100).toFixed(1)}%`, melhor: 'maior' },
   { chave: 'falsosPositivos', rotulo: 'Caixas falsas', f: (v) => v, melhor: 'menor' },
   { chave: 'atrasoMedio', rotulo: 'Atraso do 1º ID', f: (v) => (v === null ? '—' : `${v.toFixed(1)} q`), melhor: 'menor' },
 ];
 
-export function PainelImpacto({ cena, parametros, metricas }) {
-  const [paramVarrido, setParamVarrido] = useState('lost_track_buffer');
-  const [referencia, setReferencia] = useState(null);
-  const meta = PARAMETROS.find((m) => m.chave === paramVarrido);
+export function PainelImpacto({ cena, parametros, metricas }: { cena: Cena; parametros: ParametrosByteTrack; metricas: Metricas }) {
+  const [paramVarrido, setParamVarrido] = useState<ChaveParametro>('lost_track_buffer');
+  const [referencia, setReferencia] = useState<Metricas | null>(null);
+  const meta = PARAMETROS.find((m) => m.chave === paramVarrido)!;
   const varredura = useMemo(
     () => valoresVarredura(meta).map((v) => ({ v, ...avaliar(cena, executar(cena, { ...parametros, [paramVarrido]: v })) })),
     [cena, parametros, paramVarrido, meta],
   );
-  const delta = (c) => {
-    if (!referencia || c.chave === 'veiculos' || metricas[c.chave] === null || referencia[c.chave] === null) return null;
-    const d = metricas[c.chave] - referencia[c.chave];
+  const delta = (c: Cartao) => {
+    const atualV = metricas[c.chave];
+    const refV = referencia?.[c.chave] ?? null;
+    if (!referencia || c.chave === 'veiculos' || atualV === null || refV === null) return null;
+    const d = atualV - refV;
     if (Math.abs(d) < 1e-9) return <small className="delta">=</small>;
-    const bom = c.melhor === 'maior' ? d > 0 : c.melhor === 'menor' ? d < 0 : Math.abs(metricas[c.chave] - metricas.veiculos) < Math.abs(referencia[c.chave] - metricas.veiculos);
+    const bom = c.melhor === 'maior' ? d > 0 : c.melhor === 'menor' ? d < 0 : Math.abs(atualV - metricas.veiculos) < Math.abs(refV - metricas.veiculos);
     const txt = c.chave === 'cobertura' ? `${(d * 100).toFixed(1)} pp` : d.toFixed(c.chave === 'atrasoMedio' ? 1 : 0);
     return <small className={`delta ${bom ? 'bom' : 'ruim'}`}>{bom ? '▲' : '▼'} {d > 0 ? '+' : ''}{txt}</small>;
   };
@@ -163,7 +188,7 @@ export function PainelImpacto({ cena, parametros, metricas }) {
       <p className="nota">Casamento com a verdade de solo por IoU ≥ 0,3. Métricas simplificadas no espírito do CLEAR-MOT, só para comparar configurações nesta cena.</p>
 
       <label className="rotulo" htmlFor="varrer">Varrer um parâmetro (demais fixos)</label>
-      <select id="varrer" value={paramVarrido} onChange={(e) => setParamVarrido(e.target.value)}>
+      <select id="varrer" value={paramVarrido} onChange={(e) => setParamVarrido(e.target.value as ChaveParametro)}>
         {PARAMETROS.map((m) => <option key={m.chave} value={m.chave}>{m.codigo === m.chave ? m.chave : m.rotulo}</option>)}
       </select>
       <GraficoSensibilidade varredura={varredura} atual={parametros[paramVarrido]} veiculos={metricas.veiculos} rotuloX={meta.chave} inteiro={meta.passo >= 1} />
@@ -174,8 +199,8 @@ export function PainelImpacto({ cena, parametros, metricas }) {
 
 function DemoIou() {
   const [desloc, setDesloc] = useState(30);
-  const a = [20, 20, 100, 70];
-  const b = [20 + desloc, 30, 100 + desloc, 80];
+  const a: Caixa = [20, 20, 100, 70];
+  const b: Caixa = [20 + desloc, 30, 100 + desloc, 80];
   const v = iou(a, b);
   const inter = [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.min(a[2], b[2]), Math.min(a[3], b[3])];
   return (

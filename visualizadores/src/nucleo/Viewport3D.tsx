@@ -3,10 +3,29 @@
 //   e atalhos de vista do teclado numérico: 7 topo · 1 frente · 3 direita · 0/5 perspectiva.
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { GizmoHelper, GizmoViewport, Grid, OrbitControls } from '@react-three/drei';
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type ComponentRef, type ReactNode, type RefObject } from 'react';
 import * as THREE from 'three';
 
-export const VISTAS = {
+type Vetor3 = [number, number, number];
+type OrbitControlsImpl = ComponentRef<typeof OrbitControls>;
+
+interface Vista {
+  rotulo: string;
+  tecla: string;
+  pos: Vetor3;
+  alvo: Vetor3;
+}
+
+export type NomeVista = 'topo' | 'frente' | 'direita' | 'perspectiva';
+
+// Destino da animação de câmera; t força nova animação ao repetir a mesma vista.
+type Destino = Vista & { t: number };
+
+export interface ControleViewport {
+  irPara: (nome: NomeVista) => void;
+}
+
+export const VISTAS: Record<NomeVista, Vista> = {
   topo: { rotulo: 'Topo (drone)', tecla: '7', pos: [0, 11.5, 0.001], alvo: [0, 0, 0] },
   frente: { rotulo: 'Frente', tecla: '1', pos: [0, 2.2, 11], alvo: [0, 0.4, 0] },
   direita: { rotulo: 'Direita', tecla: '3', pos: [12, 2.4, 0], alvo: [0, 0.4, 0] },
@@ -14,7 +33,7 @@ export const VISTAS = {
 };
 
 // Anima câmera e alvo até a vista pedida; o arraste do usuário cancela a animação.
-function AnimadorDeVista({ destino, controlesRef }) {
+function AnimadorDeVista({ destino, controlesRef }: { destino: Destino; controlesRef: RefObject<OrbitControlsImpl | null> }) {
   const { camera } = useThree();
   const ativo = useRef(false);
   const pos = useRef(new THREE.Vector3());
@@ -53,16 +72,22 @@ function AnimadorDeVista({ destino, controlesRef }) {
   return null;
 }
 
-const Viewport3D = forwardRef(function Viewport3D({ children, vistaInicial = 'perspectiva', altura }, ref) {
-  const controlesRef = useRef();
+interface PropsViewport {
+  children?: ReactNode;
+  vistaInicial?: NomeVista;
+  altura?: number | string;
+}
+
+const Viewport3D = forwardRef<ControleViewport, PropsViewport>(function Viewport3D({ children, vistaInicial = 'perspectiva', altura }, ref) {
+  const controlesRef = useRef<OrbitControlsImpl>(null);
   const [destino, setDestino] = useStateVista(vistaInicial);
 
-  useImperativeHandle(ref, () => ({ irPara: (nome) => setDestino({ ...VISTAS[nome], t: performance.now() }) }), [setDestino]);
+  useImperativeHandle(ref, () => ({ irPara: (nome: NomeVista) => setDestino({ ...VISTAS[nome], t: performance.now() }) }), [setDestino]);
 
   useEffect(() => {
-    const teclas = { 7: 'topo', 1: 'frente', 3: 'direita', 0: 'perspectiva', 5: 'perspectiva' };
-    const aoTeclar = (e) => {
-      if (e.target.closest('input, select, textarea')) return;
+    const teclas: Record<string, NomeVista> = { 7: 'topo', 1: 'frente', 3: 'direita', 0: 'perspectiva', 5: 'perspectiva' };
+    const aoTeclar = (e: KeyboardEvent) => {
+      if ((e.target as Element | null)?.closest('input, select, textarea')) return;
       const nome = teclas[e.key];
       if (nome) setDestino({ ...VISTAS[nome], t: performance.now() });
     };
@@ -98,12 +123,12 @@ const Viewport3D = forwardRef(function Viewport3D({ children, vistaInicial = 'pe
   );
 });
 
-function useStateVista(inicial) {
-  return useState(() => ({ ...VISTAS[inicial], t: 0 }));
+function useStateVista(inicial: NomeVista) {
+  return useState<Destino>(() => ({ ...VISTAS[inicial], t: 0 }));
 }
 
 export default Viewport3D;
 
 // Conversão imagem (px) → mundo 3D: 100 px = 1 unidade; x → X, y (para baixo) → Z.
 export const ESCALA = 0.01;
-export const pxParaMundo = (x, y, largura = 1280, altura = 720) => [(x - largura / 2) * ESCALA, (y - altura / 2) * ESCALA];
+export const pxParaMundo = (x: number, y: number, largura = 1280, altura = 720): [number, number] => [(x - largura / 2) * ESCALA, (y - altura / 2) * ESCALA];

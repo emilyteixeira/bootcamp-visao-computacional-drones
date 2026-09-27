@@ -1,15 +1,39 @@
 // Linha do tempo no estilo Blender: régua de quadros, cursor azul e marcadores-losango (keyframes).
-import { useRef } from 'react';
+import { useRef, type PointerEvent } from 'react';
 
-export default function LinhaDoTempo({ total, quadro, irPara, marcadores = [], faixas = [], fps = 30 }) {
-  const ref = useRef();
-  const px = (q) => `${(q / (total - 1)) * 100}%`;
-  const aoPonteiro = (e) => {
+export interface Marcador {
+  quadro: number;
+  tipo: string;
+  texto: string;
+}
+
+export interface Faixa {
+  chave: number | string;
+  inicio: number;
+  fim: number;
+  classe: string;
+  texto: string;
+}
+
+interface PropsLinhaDoTempo {
+  total: number;
+  quadro: number;
+  irPara: (q: number) => void;
+  marcadores?: Marcador[];
+  faixas?: Faixa[];
+  fps?: number;
+}
+
+export default function LinhaDoTempo({ total, quadro, irPara, marcadores = [], faixas = [], fps = 30 }: PropsLinhaDoTempo) {
+  const ref = useRef<HTMLDivElement>(null);
+  const px = (q: number) => `${(q / (total - 1)) * 100}%`;
+  const aoPonteiro = (e: PointerEvent<HTMLElement>) => {
     if (e.buttons !== 1 && e.type !== 'pointerdown') return;
+    if (!ref.current) return;
     const r = ref.current.getBoundingClientRect();
     irPara(Math.round(((e.clientX - r.left) / r.width) * (total - 1)));
   };
-  const reguas = [];
+  const reguas: number[] = [];
   for (let q = 0; q < total; q += 10) reguas.push(q);
 
   return (

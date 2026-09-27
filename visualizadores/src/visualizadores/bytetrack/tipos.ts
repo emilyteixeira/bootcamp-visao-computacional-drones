@@ -164,3 +164,14 @@ export interface Metricas {
   atrasoMedio: number | null;
   eventos: EventoLinhaDoTempo[];
 }
+
+// Camadas visuais que o usuário liga e desliga no palco 3D.
+export interface Camadas {
+  verdade: boolean;
+  deteccoes: boolean;
+  trilhas: boolean;
+  scores: boolean;
+  descartadas: boolean;
+  raioX: boolean;
+  espacoTempo: boolean;
+}

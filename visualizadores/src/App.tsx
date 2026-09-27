@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from 'react';
-import { VISUALIZADORES, visualizadorPorId } from './registro.js';
-import VagaPlanejada from './nucleo/VagaPlanejada.jsx';
+import { VISUALIZADORES, visualizadorPorId } from './registro.ts';
+import VagaPlanejada from './nucleo/VagaPlanejada.tsx';
 
 // Roteamento por âncora simples (#bytetrack): funciona no link compartilhado do Artifact.
 const lerAncora = () => (typeof location !== 'undefined' ? location.hash.replace('#', '') : '');

@@ -6,15 +6,33 @@
 //   3. `npm run dev` e abra http://localhost:5173/#<id>
 // Entradas 'planejado' aparecem no menu como vagas reservadas (sem código ainda).
 // ─────────────────────────────────────────────────────────────────────────────
-import { lazy } from 'react';
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 
-export const VISUALIZADORES = [
+interface VisualizadorPronto {
+  id: string;
+  titulo: string;
+  subtitulo: string;
+  status: 'pronto';
+  Componente: LazyExoticComponent<ComponentType>;
+}
+
+export interface VisualizadorPlanejado {
+  id: string;
+  titulo: string;
+  subtitulo: string;
+  status: 'planejado';
+  ideia: string;
+}
+
+export type EntradaRegistro = VisualizadorPronto | VisualizadorPlanejado;
+
+export const VISUALIZADORES: EntradaRegistro[] = [
   {
     id: 'bytetrack',
     titulo: 'ByteTrack',
     subtitulo: 'Associação em duas etapas e impacto dos parâmetros',
     status: 'pronto',
-    Componente: lazy(() => import('./visualizadores/bytetrack/ByteTrackVisualizador.jsx')),
+    Componente: lazy(() => import('./visualizadores/bytetrack/ByteTrackVisualizador.tsx')),
   },
   {
     id: 'iou-nms',
@@ -46,4 +64,4 @@ export const VISUALIZADORES = [
   },
 ];
 
-export const visualizadorPorId = (id) => VISUALIZADORES.find((v) => v.id === id) ?? VISUALIZADORES[0];
+export const visualizadorPorId = (id: string): EntradaRegistro => VISUALIZADORES.find((v) => v.id === id) ?? VISUALIZADORES[0];

@@ -1,15 +1,15 @@
-// MODELO para novos visualizadores. Copie esta pasta para src/visualizadores/<id>/ e registre em src/registro.js.
+// MODELO para novos visualizadores. Copie esta pasta para src/visualizadores/<id>/ e registre em src/registro.ts.
 // Estrutura sugerida:
-//   logica.js            → matemática pura (sem React), testável em tests/<id>.test.js
-//   Cena3D.jsx           → objetos three.js/R3F dentro do <Viewport3D>
-//   <Nome>Visualizador.jsx → layout: palco (viewport + linha do tempo) e painel lateral
+//   logica.ts            → matemática pura (sem React), testável em tests/<id>.test.ts
+//   Cena3D.tsx           → objetos three.js/R3F dentro do <Viewport3D>
+//   <Nome>Visualizador.tsx → layout: palco (viewport + linha do tempo) e painel lateral
 import { useRef, useState } from 'react';
-import Viewport3D from '../../nucleo/Viewport3D.jsx';
-import Controle from '../../nucleo/ui/Controle.jsx';
+import Viewport3D, { type ControleViewport } from '../../nucleo/Viewport3D.tsx';
+import Controle from '../../nucleo/ui/Controle.tsx';
 
 export default function ModeloVisualizador() {
   const [tamanho, setTamanho] = useState(1);
-  const viewport = useRef();
+  const viewport = useRef<ControleViewport>(null);
   return (
     <div className="bt">
       <section className="bt-palco">

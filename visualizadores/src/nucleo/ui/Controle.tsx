@@ -1,5 +1,21 @@
 // Controle deslizante didático: nome no código, valor, papel e efeito de subir/descer.
-export default function Controle({ id, rotulo, codigo, valor, min, max, passo, aoMudar, formatar = (v) => v, children, destaque }) {
+import type { ReactNode } from 'react';
+
+interface PropsControle {
+  id: string;
+  rotulo: string;
+  codigo?: string;
+  valor: number;
+  min: number;
+  max: number;
+  passo: number;
+  aoMudar: (v: number) => void;
+  formatar?: (v: number) => ReactNode;
+  children?: ReactNode;
+  destaque?: boolean;
+}
+
+export default function Controle({ id, rotulo, codigo, valor, min, max, passo, aoMudar, formatar = (v) => v, children, destaque }: PropsControle) {
   return (
     <div className={`controle ${destaque ? 'destaque' : ''}`}>
       <div className="controle-cabecalho">
