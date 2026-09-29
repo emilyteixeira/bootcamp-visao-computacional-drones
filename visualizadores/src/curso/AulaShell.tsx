@@ -13,6 +13,8 @@ import { executar } from '../visualizadores/bytetrack/bytetrack.ts';
 import { avaliar } from '../visualizadores/bytetrack/metricas.ts';
 import { COR_ETAPA } from '../visualizadores/bytetrack/cores.ts';
 import Cena3D, { type FaseQuadro } from '../visualizadores/bytetrack/Cena3D.tsx';
+import Cena2D from '../visualizadores/bytetrack/Cena2D.tsx';
+import { suportaWebGL } from '../nucleo/webgl.ts';
 import { PainelQuadro } from '../visualizadores/bytetrack/Paineis.tsx';
 import type { Camadas, Instantaneo, Metricas, ParametrosByteTrack } from '../visualizadores/bytetrack/tipos.ts';
 import { cenarioDoCurso, parametrosB, parametrosDoPasso } from './cenaDoPasso.ts';
@@ -78,6 +80,10 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
   const [fase, setFase] = useState<FaseQuadro>('resultado');
   const [animando, setAnimando] = useState(false);
   const [destaque, setDestaque] = useState<number | null>(null);
+  // Vista 2D: automática sem WebGL ou após perda de contexto; também escolhida pela pessoa.
+  const [temWebGL] = useState(suportaWebGL);
+  const [modo2D, setModo2D] = useState(!temWebGL);
+  const [avisoWebGL, setAvisoWebGL] = useState<string | null>(temWebGL ? null : 'Este navegador não oferece WebGL: a aula segue na vista 2D de topo, com as mesmas detecções e trilhas.');
   const [replay, setReplay] = useState<{ nome: string; dados: Replay | null; erro?: string } | null>(null);
   const vpA = useRef<ControleViewport>(null);
   const vpB = useRef<ControleViewport>(null);
@@ -110,6 +116,19 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
       .catch(() => { if (vivo) setReplay({ nome, dados: null, erro: 'Não foi possível carregar o replay neste link.' }); });
     return () => { vivo = false; };
   }, [comp?.replayB]);
+
+  // PageDown/PageUp avançam e voltam passos (como um passador de slides); ignorados em campos.
+  useEffect(() => {
+    const aoTeclar = (e: KeyboardEvent) => {
+      // Campos que usam PageUp/PageDown (texto, controles deslizantes, listas) ficam de fora;
+      // opções de questão e caixas de seleção não usam essas teclas.
+      if ((e.target as Element | null)?.closest('input:not([type="radio"]):not([type="checkbox"]), select, textarea, [role="slider"]')) return;
+      if (e.key === 'PageDown') { e.preventDefault(); estado.avancar(); }
+      if (e.key === 'PageUp') { e.preventDefault(); estado.voltar(); }
+    };
+    window.addEventListener('keydown', aoTeclar);
+    return () => window.removeEventListener('keydown', aoTeclar);
+  }, [estado.avancar, estado.voltar]);
 
   // Animação das fases do quadro: avança uma fase a cada 1,4 s e para no resultado.
   useEffect(() => {
@@ -186,20 +205,28 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
         <p className="bt-resumo">
           <strong>{cenario.titulo}.</strong> {cenario.resumo}
         </p>
+        {avisoWebGL && <p className="aviso" role="status">{avisoWebGL}</p>}
         <div className={`palco-lados ${lados.length > 1 || aguardandoReplay ? 'ab' : ''}`}>
           {lados.map((l) => {
             const r = l.resultados[quadro];
             return (
               <div key={l.chave} className="bt-viewport">
+                {modo2D ? (
+                  <div className="viewport viewport-2d">
+                    <Cena2D cenario={cenario} cena={cena} resultados={l.resultados} quadro={quadro} camadas={camadas} faseQuadro={l.origem === 'replay' ? 'resultado' : fase} limiarAlta={l.parametros.high_conf_det_threshold} destaque={l.chave === 'A' ? destaque : null} rotulo={lados.length > 1 ? `Vista 2D ${l.chave}: ${l.rotulo}` : 'Vista 2D'} />
+                  </div>
+                ) : (
                 <Viewport3D
                   ref={l.chave === 'A' ? vpA : vpB}
                   vistaInicial={alvo.vista ?? 'perspectiva'}
                   atalhos={l.chave === 'A'}
                   aoMoverCamera={lados.length > 1 ? sincronizar(l.chave === 'A' ? vpB : vpA) : undefined}
                   rotulo={`Cena 3D${lados.length > 1 ? ` ${l.chave}: ${l.rotulo}` : ''}, quadro ${quadro}`}
+                  aoPerderContexto={() => { setModo2D(true); setAvisoWebGL('O navegador descartou o contexto WebGL: a aula passou para a vista 2D. Recarregue a página para voltar ao 3D.'); }}
                 >
                   <Cena3D cenario={cenario} cena={cena} resultados={l.resultados} quadro={quadro} camadas={camadas} faseQuadro={l.origem === 'replay' ? 'resultado' : fase} limiarAlta={l.parametros.high_conf_det_threshold} destaque={l.chave === 'A' ? destaque : null} />
                 </Viewport3D>
+                )}
                 <div className="hud hud-topo">
                   {lados.length > 1 && <span className={`selo-ab ${l.chave === 'B' ? 'b' : ''}`}>{l.chave}</span>}
                   {lados.length > 1 && <span>{l.rotulo}</span>}
@@ -211,7 +238,7 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
                   {lados.length === 1 && quadro !== alvo.quadro && <span>quadro do passo: <b className="mono">{alvo.quadro}</b></span>}
                   {alterado && (l.chave === 'B' || lados.length === 1) && <span className="hud-alterado">parâmetro alterado</span>}
                 </div>
-                {l.chave === 'A' && (
+                {l.chave === 'A' && !modo2D && (
                   <div className="hud hud-vistas" role="group" aria-label="Vistas da câmera">
                     {(Object.entries(VISTAS) as [NomeVista, (typeof VISTAS)[NomeVista]][]).map(([k, v]) => (
                       <button key={k} type="button" onClick={() => vpA.current?.irPara(k)} title={`Tecla ${v.tecla}`}>
@@ -220,7 +247,7 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
                     ))}
                   </div>
                 )}
-                {lados.length === 1 && (
+                {lados.length === 1 && !modo2D && (
                   <ul className="hud hud-legenda" aria-label="Legenda">
                     {LEGENDA.map((lg) => (
                       <li key={lg.texto}><i className={lg.estilo} style={{ '--cor': lg.cor } as CSSProperties} />{lg.texto}</li>
@@ -269,6 +296,9 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
             <select value={rep.velocidade} onChange={(e) => rep.setVelocidade(Number(e.target.value))} aria-label="Velocidade">
               {[0.1, 0.25, 0.5, 1].map((v) => <option key={v} value={v}>{v}×</option>)}
             </select>
+            <button type="button" className="chip" aria-pressed={modo2D} disabled={!temWebGL} onClick={() => setModo2D((m) => !m)} title={temWebGL ? 'Alternar entre a cena 3D e a vista 2D de topo' : 'Sem WebGL: só a vista 2D está disponível'}>
+              {modo2D ? 'Vista 3D' : 'Vista 2D'}
+            </button>
             <a className="chip" href="#bytetrack">Abrir o laboratório livre</a>
           </div>
           <LinhaDoTempo total={cenario.quadros} quadro={quadro} irPara={irQuadro} marcadores={marcadores} />
@@ -277,7 +307,7 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
         <div className="camadas" role="group" aria-label="Camadas">
           {CAMADAS.map((c) => (
             <label key={c.id} className="alternador">
-              <input type="checkbox" checked={camadas[c.id]} onChange={() => setCamadas((k) => ({ ...k, [c.id]: !k[c.id] }))} />
+              <input type="checkbox" checked={camadas[c.id]} disabled={modo2D && c.id === 'espacoTempo'} onChange={() => setCamadas((k) => ({ ...k, [c.id]: !k[c.id] }))} />
               {c.rotulo}
             </label>
           ))}
@@ -302,6 +332,8 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
           temAnterior={estado.temAnterior}
           temProximo={estado.temProximo}
           extras={extras}
+          aoIr={estado.ir}
+          aoRecomecar={estado.recomecar}
         />
       </aside>
     </div>

@@ -90,3 +90,13 @@ test('inspetor destaca a linha focada e alterna formatos', async ({ page }) => {
   await expect(page.locator('.inspetor thead')).toContainText('cxcywh');
   await expect(page.locator('.codigo .selo-validacao.ok').first()).toContainText('trackers 2.6.1');
 });
+
+test('sair de uma comparação A/B não troca a aula para a vista 2D', async ({ page }) => {
+  await abrirNoPasso(page, 4, 4);
+  await expect(page.locator('.viewport canvas')).toHaveCount(2);
+  await page.getByRole('button', { name: '← Anterior' }).click();
+  await page.waitForTimeout(800);
+  await expect(page.locator('.viewport canvas')).toHaveCount(1);
+  await expect(page.locator('.cena-2d')).toHaveCount(0);
+  await expect(page.getByText('descartou o contexto WebGL')).toHaveCount(0);
+});

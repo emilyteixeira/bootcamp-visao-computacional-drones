@@ -2,7 +2,7 @@
 
 Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e24f`).
 
-> **Etapa 0 concluída** e **motor alinhado ao `trackers` 2.6.1** (D1, D3, D4, D5), conferido contra saídas reais do Python: ver [auditoria](docs/auditoria-bytetrack-etapa0.md) §8. D2 (Kalman) mantida como simplificação. **Etapa 1 concluída:** todo `src/` e os testes de lógica em TypeScript strict. **Etapa 2 concluída:** rota `#curso-bytetrack` com os 7 capítulos roteirizados, progresso local e testes. Próximo: etapa 3 (interações específicas da narrativa ByteTrack).
+> **Etapa 0 concluída** e **motor alinhado ao `trackers` 2.6.1** (D1, D3, D4, D5), conferido contra saídas reais do Python: ver [auditoria](docs/auditoria-bytetrack-etapa0.md) §8. D2 (Kalman) mantida como simplificação. **Etapa 1 concluída:** todo `src/` e os testes de lógica em TypeScript strict. **Etapas 2 a 5 concluídas** (29/09/2026): aula completa em `#curso-bytetrack` com A/B, microcena, replay Python, trechos validados, vista 2D e verificação de acessibilidade. PR aberta a partir de `claude/sleepy-darwin-avgnii`. Pendente: medir desempenho 3D em máquina com GPU (ver §15).
 
 > O curso guiado e a migração TypeScript estão planejados, ainda não implementados. Consulte o [plano completo](docs/plano-curso-bytetrack-supervision.md). Os registros de publicação abaixo descrevem a sessão anterior; não são uma nova verificação de deploy.
 
@@ -12,7 +12,7 @@ Atualizado em 26/09/2026. Branch: `claude/sleepy-darwin-avgnii` (base `main@df5e
 |:--|:--|
 | Módulo ByteTrack | Pronto e publicado em https://claude.ai/artifact/VwfuEtPjrsJmJoM7Y8AX4j (privado até ser compartilhado) |
 | Typecheck | `npm run typecheck` (tsc 7.0.2, strict, sem `allowJs`): 0 erros. Roda na CI antes de `npm test` |
-| Curso | `#curso-bytetrack` (aba **Aula 1**): 7 capítulos, 33 passos, 7 questões, 60 min. Conteúdo em `src/curso/capitulos/aula01.ts` |
+| Curso | `#curso-bytetrack` (aba **Aula 1**): 7 capítulos, 35 passos, 7 questões, 60 min, `versaoConteudo` `2026-09-29.3`. Conteúdo em `src/curso/capitulos/aula01.ts` |
 | Testes | `npm test` (tsx + node:test): 39/39 (inclui 13 do curso). `npm run test:visual`: 10/10 em 3 execuções (6 do laboratório sem atualizar referências + 4 do curso). Contagem anterior: 26/26 (5 originais + 18 fixtures Python + 3 de buffer/Kalman). `npm run test:visual`: 6/6 em 3 execuções seguidas, com 2 referências atualizadas após revisão (27/09/2026) |
 | GitHub Pages | Publicado em https://emilyteixeira.github.io/bootcamp-visao-computacional-drones/#bytetrack (run 36253508693, deploy às 15:55 UTC de 26/09/2026). Cada push na `main` que altere `visualizadores/` republica |
 | `useblender-cli` | Cancelada pela autora em 26/09/2026. O visual continua com R3F e drei |
@@ -83,7 +83,9 @@ Mapeamento para `sv.ByteTrack`: `track_activation_threshold` separa alta de baix
 2. ~~Criar fixtures pequenas~~ — feito: 16 fixtures em `tests/fixtures/bytetrack/`.
 3. ~~Decisão da autora sobre D1–D5~~ — alinhados (27/09/2026). D2 mantida.
 4. ~~Migrar para TypeScript~~ — feito (27/09/2026), sem mudança de comportamento. Pendente opcional: `tests/visual/*.spec.js` e `playwright.config.js` seguem em JS.
-5. ~~Rota do curso e roteiro dos sete capítulos~~ — feito (etapa 2). Pendentes: etapa 3 (microcena fixture 0,18, associação por fase animada, linha de estados, comparação A/B, associação manual do cap. 1), etapa 4 (inspetor Supervision sincronizado, replays Python), etapa 5 (fallback 2D sem WebGL, acessibilidade completa, revisão).
+5. ~~Rota do curso, roteiro, etapas 3, 4 e 5~~ — feito (27–29/09/2026).
+6. Medir a latência da interação 3D numa máquina com GPU (meta: < 100 ms). Se não atingir, sugestão: `frameloop="demand"` no `Canvas` com `invalidate()` no `AnimadorDeVista`.
+7. Replays de vídeo real (`projeto-3/assets/videos/`) exigem rodar RF-DETR/YOLO com pesos: fora do escopo deste ambiente.
 6. Validar aula, acessibilidade, build e testes; registrar resultados antes de publicação.
 
 As vagas Kalman, LineZone e homografia continuam reservadas, mas a prioridade atual é a primeira aula ByteTrack + Supervision.
@@ -213,3 +215,14 @@ Histórico: [docs/historico/2026-09-27-sessao-etapa2-curso.md](docs/historico/20
 - Ligaduras desligadas em código (`!=` e `>=` apareciam como ≠ e ≥).
 - **Problema encontrado, pré-existente (já no commit base `df5e24f`)**: `dist-link/laboratorio-bytetrack.html` aberto direto no navegador dá `SyntaxError` por falta de `<meta charset>`; é intencional (fragmento para o publicador de Artifacts, que envolve o documento). Para testar localmente, abrir `dist-link/index.html`. Replay conferido nesse arquivo.
 - `versaoConteudo` → `2026-09-29.3` (35 passos). Verificação: typecheck 0; `npm test` 50/50; visuais 12/12.
+
+## 15. Etapa 5 — entrega da aula — 29/09/2026
+
+- **Vista 2D** (`bytetrack/Cena2D.tsx`, SVG de topo): automática sem WebGL (`nucleo/webgl.ts`), automática se o navegador descartar o contexto, e alternável pelo botão "Vista 2D/3D". Mesmas camadas e fases do quadro; sem espaço-tempo. **Problema resolvido:** o R3F força `webglcontextlost` ao desmontar um `Canvas` (ex.: sair de um passo A/B); o tratador agora só reage se o viewport continuar montado (`Viewport3D`, verificação após `setTimeout 0`). Teste de regressão em `curso.spec.js`.
+- **Teclado**: `PageDown`/`PageUp` avançam/voltam passos (padrão de passadores de slides; ignorados em campos de texto, listas e sliders); foco vai para o título do passo a cada troca; blocos de código roláveis focáveis; marcadores da linha do tempo com `aria-label`.
+- **Resumo final** (`ResumoAula.tsx`): "Concluir a aula" mostra passos vistos e acertos por capítulo e próximos passos nos notebooks.
+- **Acessibilidade (axe, WCAG 2 A/AA)**: 0 violações sérias/críticas em 4 passos representativos. Corrigido: contraste de `--texto-3` (#8a8883 → #a4a29c, ≥ 4,5:1 sobre todos os painéis; afeta também o laboratório), controles aninhados na linha do tempo (marcadores agora são irmãos do `role="slider"`), `pre` roláveis sem foco. Linhas fora da máscara do inspetor riscadas em vez de translúcidas.
+- **Aula completa sem WebGL e só com teclado**: teste percorre os 35 passos com `PageDown`, responde às 7 questões com `Espaço` e conclui. Celular 390 px na comparação A/B em 2D: sem rolagem horizontal.
+- **Desempenho** (`npx tsx scripts/medir-desempenho.ts`; Node 22.22.2, Intel Xeon 2,10 GHz): recalcular um clipe de 240 quadros (executar + avaliar) leva 9–13 ms de mediana, p95 ≤ 15 ms. No Chromium headless deste contêiner (WebGL por software, SwiftShader): interação na vista 2D **20 ms** (mediana, do evento ao quadro pintado); na vista 3D A/B **~290–360 ms**, dominados pela renderização por software (quadro ocioso ≈ 78 ms com dois canvases). **Não medido com GPU**: a meta de 100 ms no 3D continua a verificar em máquina real.
+- Referências visuais: `bytetrack-celular.png` atualizada após revisão (aba "Aula 1" e contraste novo); nova `curso-2d-microcena-etapa2.png`.
+- Verificação final: typecheck 0; `npm test` 50/50; `npm run test:visual` 20/20 em 3 execuções; `build`, `build:pages` e `build:link` ok (`laboratorio-bytetrack.html` 1.861 KiB; replays inline no arquivo único).

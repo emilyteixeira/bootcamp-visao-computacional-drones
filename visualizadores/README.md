@@ -25,7 +25,7 @@ npm install
 npm run dev          # http://localhost:5173/#bytetrack (laboratório) e #curso-bytetrack (Aula 1)
 npm run typecheck    # tsc strict (TypeScript 7)
 npm test             # testes da lógica (tsx + node:test), incluindo fixtures do trackers 2.6.1
-npm run test:visual  # testes visuais Playwright (10 cenários: laboratório e Aula 1, referências em tests/visual/referencias/)
+npm run test:visual  # Playwright: laboratório, Aula 1, vista 2D, teclado e axe (20 testes, referências em tests/visual/referencias/)
 npm run build:pages  # dist/ com base /bootcamp-visao-computacional-drones/ (GitHub Pages)
 npm run build        # dist/ (vários arquivos, para hospedagem estática)
 npm run build:link   # dist-link/laboratorio-bytetrack.html (arquivo único, para publicar)
@@ -67,3 +67,18 @@ scripts/exportar-fixtures-bytetrack.py   ← regenera as fixtures com o ByteTrac
 O workflow `.github/workflows/visualizadores-pages.yml` roda `npm run typecheck`, `npm test`, os testes visuais e a build. Em push na `main`, ele publica em `https://emilyteixeira.github.io/bootcamp-visao-computacional-drones/#bytetrack`. Pré-requisito: em Settings → Pages, escolha Source: **GitHub Actions**. Localmente, `CHROMIUM_PATH=/opt/pw-browsers/chromium` aponta o Chromium do container.
 
 Documentos de continuidade: [HANDOVER.md](HANDOVER.md) e [docs/historico/](docs/historico/).
+
+## Scripts de referência Python (fora da CI)
+
+Rodar num ambiente com `trackers==2.6.1`, `supervision==0.30.5` e `numpy==2.3.5` (sem GPU):
+
+```bash
+python scripts/exportar-fixtures-bytetrack.py            # tests/fixtures/bytetrack/*.json
+npx tsx scripts/exportar-cenas.ts oclusao > cena.json
+python scripts/exportar-replays-bytetrack.py cena.json oclusao-nb02
+python scripts/exportar-replays-bytetrack.py cena.json oclusao-nb02-buffer60 lost_track_buffer=60
+python scripts/validar-trechos.py                        # src/curso/validacao-trechos.json
+npx tsx scripts/medir-desempenho.ts                      # tempo de recálculo por cena
+```
+
+Os testes unitários acusam quando uma cena, um trecho ou o motor mudam sem regenerar esses arquivos.

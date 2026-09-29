@@ -1,5 +1,5 @@
 // Painel lateral da aula: passo atual (texto, código, parâmetro livre, questão, fontes) e navegação.
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Controle from '../../nucleo/ui/Controle.tsx';
 import { PARAMETROS } from '../../visualizadores/bytetrack/parametros.ts';
 import type { ParametrosByteTrack } from '../../visualizadores/bytetrack/tipos.ts';
@@ -9,6 +9,8 @@ import Questao from './Questao.tsx';
 import Referencia from './Referencia.tsx';
 import TextoRico, { formatar } from './TextoRico.tsx';
 import TrechoPython from './TrechoPython.tsx';
+import ResumoAula from './ResumoAula.tsx';
+import type { Posicao } from '../tipos.ts';
 
 const FASE: Record<Fase, string> = {
   observar: 'Observar',
@@ -32,6 +34,8 @@ interface Props {
   temProximo: boolean;
   // Painéis auxiliares do passo (etapas do quadro, detecções, resumo do clipe).
   extras?: ReactNode;
+  aoIr: (p: Posicao) => void;
+  aoRecomecar: () => void;
 }
 
 export default function PainelRoteiro(props: Props) {
@@ -40,6 +44,25 @@ export default function PainelRoteiro(props: Props) {
   const total = totalPassos(aula);
   const meta = passo.parametroLivre ? PARAMETROS.find((m) => m.chave === passo.parametroLivre) : undefined;
   const primeiroDoCapitulo = prog.posicao.passo === 0;
+  const [concluida, setConcluida] = useState(false);
+  const titulo = useRef<HTMLHeadingElement>(null);
+  const primeiraRenderizacao = useRef(true);
+
+  // A cada troca de passo, o foco vai para o título: leitores de tela anunciam o passo novo
+  // e quem navega por teclado continua a partir dele. Não rouba o foco na primeira carga.
+  useEffect(() => {
+    setConcluida(false);
+    if (primeiraRenderizacao.current) { primeiraRenderizacao.current = false; return; }
+    titulo.current?.focus();
+  }, [passo.id]);
+
+  if (concluida) {
+    return (
+      <div className="roteiro">
+        <ResumoAula aula={aula} prog={prog} aoIr={(p) => { setConcluida(false); props.aoIr(p); }} aoVoltar={() => setConcluida(false)} aoRecomecar={() => { setConcluida(false); props.aoRecomecar(); }} />
+      </div>
+    );
+  }
 
   return (
     <div className="roteiro">
@@ -59,7 +82,7 @@ export default function PainelRoteiro(props: Props) {
 
       <section className="roteiro-passo" aria-labelledby={`titulo-${passo.id}`}>
         <p className={`fase fase-${passo.fase}`}>{FASE[passo.fase]}</p>
-        <h3 id={`titulo-${passo.id}`}>{passo.titulo}</h3>
+        <h3 id={`titulo-${passo.id}`} ref={titulo} tabIndex={-1}>{passo.titulo}</h3>
         <TextoRico paragrafos={passo.texto} />
 
         {passo.tabela && (
@@ -106,10 +129,11 @@ export default function PainelRoteiro(props: Props) {
       </section>
 
       <nav className="roteiro-nav" aria-label="Navegação da aula">
-        <button type="button" onClick={props.aoVoltar} disabled={!props.temAnterior}>← Anterior</button>
-        <button type="button" className="primario" onClick={props.aoAvancar} disabled={!props.temProximo}>
-          {props.temProximo ? 'Próximo →' : 'Fim da aula'}
-        </button>
+        <button type="button" onClick={props.aoVoltar} disabled={!props.temAnterior} aria-keyshortcuts="PageUp">← Anterior</button>
+        <span className="atalhos-nav" aria-hidden="true"><kbd>PgUp</kbd> <kbd>PgDn</kbd></span>
+        {props.temProximo
+          ? <button type="button" className="primario" onClick={props.aoAvancar} aria-keyshortcuts="PageDown">Próximo →</button>
+          : <button type="button" className="primario" onClick={() => setConcluida(true)}>Concluir a aula</button>}
       </nav>
     </div>
   );

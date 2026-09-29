@@ -8,7 +8,7 @@
   --borda: #3f3f3f;
   --texto: #e7e6e3;
   --texto-2: #b3b1ab;
-  --texto-3: #8a8883;
+  --texto-3: #a4a29c;    /* ≥ 4,5:1 sobre todos os fundos de painel (WCAG AA) */
   --acento: #4772b3;      /* azul de seleção/cursor do Blender */
   --acento-claro: #6d98d6;
   --laranja: #f08a24;     /* laranja de objeto ativo do Blender */
@@ -90,6 +90,8 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .botoes-transporte button, .botoes-transporte select { background: var(--painel-2); border: 1px solid var(--borda); border-radius: 3px; padding: 3px 10px; cursor: pointer; min-width: 34px; }
 .botoes-transporte button.play { background: var(--acento); border-color: var(--acento); color: #fff; }
 .linha-tempo-area { position: relative; height: 44px; background: var(--campo); border-radius: 3px; cursor: ew-resize; touch-action: none; overflow: hidden; }
+.linha-tempo-trilho { position: absolute; inset: 0; }
+.linha-tempo-trilho:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: -2px; }
 .regua { position: absolute; top: 0; height: 8px; border-left: 1px solid #3a3a3a; }
 .regua.forte { height: 100%; border-color: #333; }
 .regua em { position: absolute; top: 2px; left: 3px; font: normal 10px var(--mono); color: var(--texto-3); }
@@ -307,7 +309,7 @@ a.chip { color: var(--texto-2); text-decoration: none; }
 .inspetor tbody tr { cursor: default; }
 .inspetor tbody tr:hover, .inspetor tbody tr:focus { background: #3a2f16; outline: none; }
 .inspetor tbody tr.destacada { background: #3a2f16; box-shadow: inset 3px 0 0 var(--laranja); }
-.inspetor tbody tr.fora-mascara td { opacity: 0.4; }
+.inspetor tbody tr.fora-mascara td { color: var(--texto-3); text-decoration: line-through; }
 .inspetor-mascara { display: grid; gap: 2px; font-size: 11.5px; padding-top: 6px; color: var(--texto-2); }
 .inspetor-mascara input { accent-color: var(--laranja); }
 .codigo figcaption { display: flex; flex-wrap: wrap; gap: 4px 8px; justify-content: space-between; align-items: center; }
@@ -326,6 +328,24 @@ a.chip { color: var(--texto-2); text-decoration: none; }
 .tabela-passo caption { text-align: left; font-size: 12px; color: var(--texto-3); padding-bottom: 4px; }
 .tabela-passo th, .tabela-passo td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--borda); vertical-align: top; }
 .tabela-passo thead th { color: var(--texto-2); }
+
+/* Etapa 5: vista 2D, resumo, navegação */
+.viewport-2d { display: grid; place-items: center; background: #262626; overflow: hidden; }
+.cena-2d { width: 100%; height: 100%; }
+.rotulo-2d { font: 700 30px var(--mono); }
+.rotulo-2d.contorno { paint-order: stroke; stroke: #111; stroke-width: 6px; }
+.atalhos-nav { align-self: center; color: var(--texto-3); font-size: 12px; }
+.roteiro-passo h3:focus { outline: none; }
+.roteiro-passo h3:focus-visible { outline: 2px solid var(--acento-claro); outline-offset: 2px; }
+.resumo-aula { padding: 14px; display: grid; gap: 10px; font-size: 14px; color: var(--texto-2); }
+.resumo-aula h3 { font: 600 20px var(--fonte-cond); color: var(--texto); }
+.resumo-aula h4 { font: 600 15px var(--fonte-cond); color: var(--texto); margin: 4px 0 0; }
+.resumo-aula p, .resumo-aula ul { margin: 0; }
+.resumo-aula ul { padding-left: 18px; display: grid; gap: 4px; }
+.resumo-aula table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.resumo-aula th, .resumo-aula td { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--borda); }
+.resumo-aula a { color: var(--acento-claro); }
+button.link { background: none; border: 0; padding: 0; color: var(--acento-claro); cursor: pointer; text-align: left; font: inherit; }
 
 @media (max-width: 1024px) {
   .bt { grid-template-columns: 1fr; }

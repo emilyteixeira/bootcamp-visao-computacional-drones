@@ -15,12 +15,12 @@ export default function TrechoPython({ id }: { id: string }) {
         {v?.status === 'ok' && t.execucao === 'ilustrativo' && <span className="selo-validacao ilustrativo" title={t.motivo}>ilustrativo · API conferida</span>}
         {(!v || v.status !== 'ok') && <span className="selo-validacao falhou">não validado</span>}
       </figcaption>
-      <pre><code>{t.codigo}</code></pre>
+      <pre tabIndex={0} aria-label={`Código: ${t.origem}`}><code>{t.codigo}</code></pre>
       {t.execucao === 'ilustrativo' && t.motivo && <p className="codigo-nota">{t.motivo}</p>}
       {t.execucao === 'executado' && v?.saida && (
         <div className="codigo-saida">
           <span>Saída registrada ({VALIDACAO.data})</span>
-          <pre>{v.saida.trimEnd()}</pre>
+          <pre tabIndex={0} aria-label="Saída registrada">{v.saida.trimEnd()}</pre>
         </div>
       )}
     </figure>

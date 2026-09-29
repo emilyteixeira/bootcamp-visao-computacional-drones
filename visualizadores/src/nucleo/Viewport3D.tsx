@@ -132,6 +132,13 @@ const Viewport3D = forwardRef<ControleViewport, PropsViewport>(function Viewport
 ) {
   const controlesRef = useRef<OrbitControlsImpl>(null);
   const apiCamera = useRef<ApiCamera>(null);
+  // O R3F força a perda do contexto ao desmontar o Canvas; só uma perda com o viewport ainda
+  // montado é real. A verificação espera o fim do ciclo de desmontagem.
+  const montado = useRef(true);
+  useEffect(() => {
+    montado.current = true;
+    return () => { montado.current = false; };
+  }, []);
   const [destino, setDestino] = useStateVista(vistaInicial);
 
   useImperativeHandle(ref, () => ({
@@ -159,7 +166,10 @@ const Viewport3D = forwardRef<ControleViewport, PropsViewport>(function Viewport
         dpr={[1, 2]}
         gl={{ antialias: true }}
         onCreated={({ gl }) => {
-          if (aoPerderContexto) gl.domElement.addEventListener('webglcontextlost', () => aoPerderContexto(), { once: true });
+          if (!aoPerderContexto) return;
+          gl.domElement.addEventListener('webglcontextlost', () => {
+            window.setTimeout(() => { if (montado.current) aoPerderContexto(); }, 0);
+          }, { once: true });
         }}
       >
         <color attach="background" args={['#262626']} />
