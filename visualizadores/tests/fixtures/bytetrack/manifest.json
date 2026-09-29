@@ -25,6 +25,8 @@
   "confirmacao-3-quadros",
   "tentativa-sobrevive-min1",
   "ambiguidade-limiar",
+  "microcena-filtro-010",
+  "microcena-filtro-025",
   "kalman-oclusao"
  ]
 }

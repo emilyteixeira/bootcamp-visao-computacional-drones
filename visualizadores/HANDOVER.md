@@ -192,3 +192,14 @@ Histórico: [docs/historico/2026-09-27-sessao-etapa2-curso.md](docs/historico/20
 
 ### Como continuar
 `npm run dev` → `http://localhost:5173/#curso-bytetrack`. Para limpar o progresso: botão “Recomeçar a aula” ou `localStorage.removeItem('curso-bytetrack:progresso')`.
+
+## 13. Etapa 3 — narrativa ByteTrack — 29/09/2026
+
+- **Comparação A/B** (`Passo.comparacao`): dois viewports com as mesmas detecções, quadro, camadas e câmeras sincronizadas (`Viewport3D.definirCamera`/`aoMoverCamera`; só A responde às teclas 7/1/3/0). B = A + `ajustesB`; o parâmetro livre altera B. Tabela `ResumoComparacao`. Usada nos caps. 2, 3, 4 (duas vezes), 5 e 7. Teste garante que cada comparação muda exatamente um parâmetro.
+- **Ablação "somente alta confiança"** = filtro do detector no valor do limiar alta × baixa. Equivalente a desligar a etapa 2, porque caixas baixas sem par nunca abrem trilha. Não é chamada de SORT.
+- **Microcena** (`bytetrack/microcena.ts`, cenário `micro`, só no curso): 30 quadros, carro com 0,18 nos quadros 10–17, FP isolado de 0,18 nos quadros 12–16, buffer 5. Fixtures Python `microcena-filtro-010/025`: filtro 0,10 → `#0` o tempo todo, FP sempre −1; filtro 0,25 → `#0` removido, tentativa no q18, `#1` no q19. Motor JS idêntico quadro a quadro.
+- **Passo a passo do quadro** (`faseQuadro`): Previsão → Etapa 1 → Etapa 2 → Resultado, com caixas previstas, conectores e IoU (`CamadaFase` em `Cena3D.tsx`); botão "Animar as fases" (1,4 s por fase). `TrackSnapshot.caixaPrevista` novo.
+- **Linha de estados** (`LinhaDeEstados.tsx`) nos passos do cap. 5 e na microcena.
+- **Associação manual** (`AssociacaoManual.tsx`) no cap. 1, quadros 60 → 61; "Real" = verdade de solo, "Rastreador" = tracker_id.
+- `versaoConteudo` → `2026-09-29.1` (34 passos): progresso antigo recomeça com aviso.
+- Verificação: typecheck 0; `npm test` 47/47 (20 fixtures Python); visuais 10/10 sem atualizar referências.

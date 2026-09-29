@@ -149,7 +149,7 @@ export function gerarCena(cenario: Cenario, semente = cenario.semente): Cena {
       dets.push({ caixa: centroParaCaixa(cx, cy, w, h), score: rng.entre(d.scoreFalso[0], d.scoreFalso[1]), gtId: null });
     }
     verdade.push(gts);
-    deteccoes.push(dets);
+    deteccoes.push(cenario.deteccoesFixas ? cenario.deteccoesFixas[t].map((d) => ({ ...d })) : dets);
   }
   return { verdade, deteccoes };
 }

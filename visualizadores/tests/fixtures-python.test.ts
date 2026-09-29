@@ -23,6 +23,7 @@ interface Fixture {
 }
 type Par = [number, number];
 
+// Todas as fixtures, inclusive as da microcena do curso, passam pelo motor JS abaixo.
 const PASTA = new URL('./fixtures/bytetrack/', import.meta.url);
 const ler = <T = Fixture>(nome: string): T => JSON.parse(readFileSync(new URL(nome, PASTA), 'utf8'));
 const { fixtures } = ler<{ fixtures: string[] }>('manifest.json');
@@ -76,4 +77,12 @@ test('D2 mantida: caixa prevista difere do Python em poucos pixels, IDs iguais',
     if (a && b) maior = Math.max(maior, ...a.map((v, i) => Math.abs(v - b[i])));
   });
   assert.ok(maior > 0 && maior < 10, `divergência máxima ${maior.toFixed(2)} px`);
+});
+
+test('microcena do curso tem exatamente as detecções da fixture Python', async () => {
+  const { deteccoesMicrocena } = await import('../src/visualizadores/bytetrack/microcena.ts');
+  const js = deteccoesMicrocena().map((q) => q.map((d) => ({ xyxy: d.caixa, confidence: d.score })));
+  for (const nome of ['microcena-filtro-010', 'microcena-filtro-025']) {
+    assert.deepEqual(js, ler(`${nome}.json`).quadros.map((q) => q.deteccoes), nome);
+  }
 });

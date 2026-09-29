@@ -71,7 +71,7 @@ export default function PainelRoteiro(props: Props) {
         {meta && (
           <Controle
             id={`livre-${meta.chave}`}
-            rotulo={meta.rotulo}
+            rotulo={passo.comparacao ? `${meta.rotulo} (lado B)` : meta.rotulo}
             codigo={meta.codigo}
             valor={parametros[meta.chave]}
             min={meta.min}

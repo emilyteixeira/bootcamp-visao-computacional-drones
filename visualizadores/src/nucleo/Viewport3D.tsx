@@ -6,7 +6,7 @@ import { GizmoHelper, GizmoViewport, Grid, OrbitControls } from '@react-three/dr
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type ComponentRef, type ReactNode, type RefObject } from 'react';
 import * as THREE from 'three';
 
-type Vetor3 = [number, number, number];
+export type Vetor3 = [number, number, number];
 type OrbitControlsImpl = ComponentRef<typeof OrbitControls>;
 
 interface Vista {
@@ -23,6 +23,45 @@ type Destino = Vista & { t: number };
 
 export interface ControleViewport {
   irPara: (nome: NomeVista) => void;
+  // Posiciona a câmera sem animação e sem emitir aoMoverCamera (evita laço entre viewports).
+  definirCamera: (pos: Vetor3, alvo: Vetor3) => void;
+}
+
+interface ApiCamera {
+  definir: (pos: Vetor3, alvo: Vetor3) => void;
+}
+
+// Dentro do Canvas: expõe definirCamera e avisa quando a órbita muda (para sincronizar A/B).
+function SincronizadorDeCamera({ apiRef, controlesRef, aoMover }: {
+  apiRef: RefObject<ApiCamera | null>;
+  controlesRef: RefObject<OrbitControlsImpl | null>;
+  aoMover?: (pos: Vetor3, alvo: Vetor3) => void;
+}) {
+  const { camera } = useThree();
+  const ignorar = useRef(false);
+  useEffect(() => {
+    apiRef.current = {
+      definir: (pos, alvo) => {
+        const c = controlesRef.current;
+        ignorar.current = true;
+        camera.position.set(...pos);
+        c?.target.set(...alvo);
+        c?.update();
+        ignorar.current = false;
+      },
+    };
+  }, [apiRef, camera, controlesRef]);
+  useEffect(() => {
+    const c = controlesRef.current;
+    if (!c || !aoMover) return;
+    const aoMudar = () => {
+      if (ignorar.current) return;
+      aoMover([camera.position.x, camera.position.y, camera.position.z], [c.target.x, c.target.y, c.target.z]);
+    };
+    c.addEventListener('change', aoMudar);
+    return () => c.removeEventListener('change', aoMudar);
+  }, [aoMover, camera, controlesRef]);
+  return null;
 }
 
 export const VISTAS: Record<NomeVista, Vista> = {
@@ -80,15 +119,28 @@ interface PropsViewport {
   children?: ReactNode;
   vistaInicial?: NomeVista;
   altura?: number | string;
+  // false: não responde às teclas 7/1/3/0 (o segundo viewport de uma comparação segue o primeiro).
+  atalhos?: boolean;
+  aoMoverCamera?: (pos: Vetor3, alvo: Vetor3) => void;
+  // Chamado se o navegador descartar o contexto WebGL (o chamador pode trocar para a vista 2D).
+  aoPerderContexto?: () => void;
+  rotulo?: string;
 }
 
-const Viewport3D = forwardRef<ControleViewport, PropsViewport>(function Viewport3D({ children, vistaInicial = 'perspectiva', altura }, ref) {
+const Viewport3D = forwardRef<ControleViewport, PropsViewport>(function Viewport3D(
+  { children, vistaInicial = 'perspectiva', altura, atalhos = true, aoMoverCamera, aoPerderContexto, rotulo }, ref,
+) {
   const controlesRef = useRef<OrbitControlsImpl>(null);
+  const apiCamera = useRef<ApiCamera>(null);
   const [destino, setDestino] = useStateVista(vistaInicial);
 
-  useImperativeHandle(ref, () => ({ irPara: (nome: NomeVista) => setDestino({ ...VISTAS[nome], t: performance.now() }) }), [setDestino]);
+  useImperativeHandle(ref, () => ({
+    irPara: (nome: NomeVista) => setDestino({ ...VISTAS[nome], t: performance.now() }),
+    definirCamera: (pos: Vetor3, alvo: Vetor3) => apiCamera.current?.definir(pos, alvo),
+  }), [setDestino]);
 
   useEffect(() => {
+    if (!atalhos) return;
     const teclas: Record<string, NomeVista> = { 7: 'topo', 1: 'frente', 3: 'direita', 0: 'perspectiva', 5: 'perspectiva' };
     const aoTeclar = (e: KeyboardEvent) => {
       if ((e.target as Element | null)?.closest('input, select, textarea')) return;
@@ -97,12 +149,19 @@ const Viewport3D = forwardRef<ControleViewport, PropsViewport>(function Viewport
     };
     window.addEventListener('keydown', aoTeclar);
     return () => window.removeEventListener('keydown', aoTeclar);
-  }, [setDestino]);
+  }, [setDestino, atalhos]);
 
   const inicial = VISTAS[vistaInicial];
   return (
-    <div className="viewport" style={altura ? { height: altura } : undefined}>
-      <Canvas camera={{ position: inicial.pos, fov: 40, near: 0.05, far: 200 }} dpr={[1, 2]} gl={{ antialias: true }}>
+    <div className="viewport" style={altura ? { height: altura } : undefined} role="img" aria-label={rotulo ?? 'Cena 3D'}>
+      <Canvas
+        camera={{ position: inicial.pos, fov: 40, near: 0.05, far: 200 }}
+        dpr={[1, 2]}
+        gl={{ antialias: true }}
+        onCreated={({ gl }) => {
+          if (aoPerderContexto) gl.domElement.addEventListener('webglcontextlost', () => aoPerderContexto(), { once: true });
+        }}
+      >
         <color attach="background" args={['#262626']} />
         <hemisphereLight args={['#dfe7f2', '#3a3326', 1.1]} />
         <directionalLight position={[6, 12, 4]} intensity={1.6} />
@@ -119,6 +178,7 @@ const Viewport3D = forwardRef<ControleViewport, PropsViewport>(function Viewport
         {children}
         <OrbitControls ref={controlesRef} makeDefault target={inicial.alvo} maxPolarAngle={Math.PI / 2 - 0.02} />
         <AnimadorDeVista destino={destino} controlesRef={controlesRef} />
+        <SincronizadorDeCamera apiRef={apiCamera} controlesRef={controlesRef} aoMover={aoMoverCamera} />
         <GizmoHelper alignment="bottom-right" margin={[64, 64]}>
           <GizmoViewport axisColors={['#ff3352', '#8bdc00', '#2890ff']} labelColor="#111" />
         </GizmoHelper>

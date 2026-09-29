@@ -161,7 +161,7 @@ export function criarRastreador(p: ParametrosByteTrack): Rastreador {
       log,
       deteccoes: dets.map((d) => ({ caixa: d.caixa, score: d.score, gtId: d.gtId, etapa: d.etapa, id: d.trilha ? d.trilha.id : null, interno: d.trilha ? d.trilha.interno : null })),
       descartadas: deteccoesBrutas.filter((d) => d.score < p.limiar_detector).map((d) => ({ caixa: d.caixa, score: d.score, gtId: d.gtId })),
-      trilhas: trilhas.map((t) => ({ interno: t.interno, id: t.id, estado: t.estado, caixa: t.semAtualizar === 0 ? t.caixa : t.caixaPrevista, semAtualizar: t.semAtualizar, maxPerdido, score: t.score })),
+      trilhas: trilhas.map((t) => ({ interno: t.interno, id: t.id, estado: t.estado, caixa: t.semAtualizar === 0 ? t.caixa : t.caixaPrevista, caixaPrevista: t.caixaPrevista, semAtualizar: t.semAtualizar, maxPerdido, score: t.score })),
     };
     const porInterno = new Map(instantaneo.trilhas.map((t) => [t.interno, t]));
     for (const k of ['etapa1', 'etapa2', 'novas'] as const) log[k].forEach((e) => { e.id = porInterno.get(e.trilha)?.id ?? -1; });

@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { AULA_01 } from '../src/curso/capitulos/aula01.ts';
 import { FONTES } from '../src/curso/fontes.ts';
-import { parametrosDoPasso } from '../src/curso/cenaDoPasso.ts';
+import { cenarioDoCurso, parametrosB, parametrosDoPasso } from '../src/curso/cenaDoPasso.ts';
 import {
   anterior, desserializar, indiceLinear, irPara, progressoInicial, proximo, responder, resumoCapitulo, serializar, totalPassos,
 } from '../src/curso/progresso.ts';
@@ -44,7 +44,7 @@ test('roteiro: fontes, cenas, predefinições e parâmetros existem', () => {
     assert.ok(p.fontes.length > 0, `${p.id} sem fonte`);
     for (const f of p.fontes) assert.ok(FONTES[f], `${p.id}: fonte ${f}`);
     assert.ok(p.texto.length > 0 && p.texto.every((t) => t.trim().length > 0), `${p.id}: texto vazio`);
-    const cen = CENARIOS[p.cena.cenario];
+    const cen = cenarioDoCurso(p.cena.cenario);
     assert.ok(p.cena.quadro >= 0 && p.cena.quadro < cen.quadros, `${p.id}: quadro fora da cena`);
     assert.ok(PREDEFINICOES.some((pr) => pr.id === p.cena.predefinicao), `${p.id}: predefinição`);
     for (const k of Object.keys(p.cena.ajustes ?? {})) assert.ok(chaves.has(k as keyof ParametrosByteTrack), `${p.id}: ajuste ${k}`);
@@ -179,4 +179,66 @@ test('texto do capítulo 7: drone alto com valores do notebook 03', () => {
 test('parâmetros do passo = predefinição + ajustes', () => {
   const p = passos.find((x) => x.id === 'c7-limites')!;
   assert.deepEqual(parametrosDoPasso(p.cena), { ...nb('nb03'), high_conf_det_threshold: 0.35 });
+});
+
+// ─── Etapa 3: comparação A/B, microcena, associação manual ─────────────────
+test('comparações A/B mudam exatamente um parâmetro', () => {
+  for (const p of passos) {
+    if (!p.comparacao) continue;
+    const a = parametrosDoPasso(p.cena);
+    const b = parametrosB(p.cena, p.comparacao);
+    const diferentes = (Object.keys(a) as (keyof ParametrosByteTrack)[]).filter((k) => a[k] !== b[k]);
+    assert.equal(diferentes.length, 1, `${p.id}: ${diferentes.join(', ')}`);
+    if (p.parametroLivre) assert.equal(diferentes[0], p.parametroLivre, `${p.id}: parâmetro livre deve ser o comparado`);
+  }
+});
+
+test('alterar parâmetros não altera as detecções de entrada (A e B veem a mesma cena)', () => {
+  for (const id of ['oclusao', 'micro'] as const) {
+    const cena = gerarCena(cenarioDoCurso(id));
+    const antes = JSON.stringify(cena.deteccoes);
+    executar(cena, nb('nb02'));
+    executar(cena, { ...nb('nb02'), limiar_detector: 0.25, lost_track_buffer: 5 });
+    assert.equal(JSON.stringify(cena.deteccoes), antes, id);
+  }
+});
+
+test('texto das comparações: IDs citados em A e B', () => {
+  const idDe = (r: ReturnType<typeof rodar>, q: number, gt: number) => r[q].deteccoes.find((d) => d.gtId === gt)?.id;
+  const base = rodar('oclusao', nb('nb02'));
+  // Cap. 4 (A/B somente alta): veículo 3 é #1 em A e #5 em B no q110.
+  assert.equal(idDe(base, 110, 3), 1);
+  assert.equal(idDe(rodar('oclusao', { ...nb('nb02'), limiar_detector: 0.25 }), 110, 3), 5);
+  // Cap. 5 (buffer): veículo 4 é #5 em A e #3 em B no q200.
+  assert.equal(idDe(base, 200, 4), 5);
+  assert.equal(idDe(rodar('oclusao', { ...nb('nb02'), lost_track_buffer: 60 }), 200, 4), 3);
+  // Cap. 3 (IoU 0,50): o par de IoU 0,12 que recupera #1 no q106 é recusado.
+  const iou50 = rodar('oclusao', { ...nb('nb02'), minimum_iou_threshold: 0.5 });
+  assert.ok(!iou50[106].log.etapa2.some((e) => e.id === 1));
+});
+
+test('texto da microcena: A mantém #0; B perde o ID e o carro vira #1 no quadro 19', () => {
+  const micro = cenarioDoCurso('micro');
+  const cena = gerarCena(micro);
+  const p = { ...nb('nb02'), lost_track_buffer: 5 };
+  const a = executar(cena, p);
+  const b = executar(cena, { ...p, limiar_detector: 0.25 });
+  const carro = (r: typeof a, q: number) => r[q].deteccoes.find((d) => d.gtId === 1)?.id;
+  for (let q = 1; q < 30; q++) assert.equal(carro(a, q), 0, `A q${q}`);
+  for (let q = 12; q <= 16; q++) assert.equal(a[q].deteccoes.find((d) => d.gtId === null)!.id ?? -1, -1, `FP q${q}`);
+  assert.equal(carro(b, 9), 0);
+  assert.equal(carro(b, 18), -1);
+  assert.equal(carro(b, 19), 1);
+  assert.equal(avaliar(cena, a).idsCriados, 1);
+  assert.equal(avaliar(cena, b).idsCriados, 2);
+});
+
+test('associação manual do cap. 1: rastreador acerta todas as caixas do quadro 61', () => {
+  const r = rodar('oclusao', nb('nb02'));
+  const [a, b] = [r[60].deteccoes, r[61].deteccoes];
+  for (const d of b) {
+    const real = d.gtId == null ? -1 : a.findIndex((x) => x.gtId === d.gtId);
+    const doRastreador = (d.id ?? -1) < 0 ? -1 : a.findIndex((x) => x.id === d.id);
+    assert.equal(doRastreador, real);
+  }
 });

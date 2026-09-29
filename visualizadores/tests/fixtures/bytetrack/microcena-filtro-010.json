@@ -1,0 +1,1049 @@
+{
+ "schemaVersion": 1,
+ "nome": "microcena-filtro-010",
+ "descricao": "Microcena do curso com filtro 0,10 e buffer 5.",
+ "parametros": {
+  "frame_rate": 30.0,
+  "high_conf_det_threshold": 0.25,
+  "track_activation_threshold": 0.35,
+  "minimum_consecutive_frames": 2,
+  "minimum_iou_threshold": 0.1,
+  "lost_track_buffer": 5,
+  "limiar_detector": 0.1,
+  "maximum_frames_without_update": 5
+ },
+ "quadros": [
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      263.0,
+      327.0,
+      337.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": -1,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      263.0,
+      327.0,
+      337.0,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      275.0,
+      327.0,
+      349.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      274.4313,
+      327.0,
+      348.4313,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      287.0,
+      327.0,
+      361.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 3,
+     "xyxy": [
+      286.177,
+      327.0,
+      360.177,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      299.0,
+      327.0,
+      373.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 4,
+     "xyxy": [
+      298.5103,
+      327.0,
+      372.5103,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      311.0,
+      327.0,
+      385.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 5,
+     "xyxy": [
+      310.7072,
+      327.0,
+      384.7072,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      323.0,
+      327.0,
+      397.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 6,
+     "xyxy": [
+      322.8253,
+      327.0,
+      396.8253,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      335.0,
+      327.0,
+      409.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 7,
+     "xyxy": [
+      334.9014,
+      327.0,
+      408.9014,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      347.0,
+      327.0,
+      421.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 8,
+     "xyxy": [
+      346.9508,
+      327.0,
+      420.9508,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      359.0,
+      327.0,
+      433.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 9,
+     "xyxy": [
+      358.9811,
+      327.0,
+      432.9811,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      371.0,
+      327.0,
+      445.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 10,
+     "xyxy": [
+      370.9976,
+      327.0,
+      444.9976,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      383.0,
+      327.0,
+      457.0,
+      363.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 11,
+     "xyxy": [
+      383.0051,
+      327.0,
+      457.0051,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      395.0,
+      327.0,
+      469.0,
+      363.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 12,
+     "xyxy": [
+      395.0072,
+      327.0,
+      469.0072,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      407.0,
+      327.0,
+      481.0,
+      363.0
+     ],
+     "confidence": 0.18
+    },
+    {
+     "xyxy": [
+      875.0,
+      427.0,
+      925.0,
+      453.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    },
+    {
+     "det": 1,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 13,
+     "xyxy": [
+      407.0066,
+      327.0,
+      481.0066,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      419.0,
+      327.0,
+      493.0,
+      363.0
+     ],
+     "confidence": 0.18
+    },
+    {
+     "xyxy": [
+      875.0,
+      427.0,
+      925.0,
+      453.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    },
+    {
+     "det": 1,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 14,
+     "xyxy": [
+      419.005,
+      327.0,
+      493.005,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      431.0,
+      327.0,
+      505.0,
+      363.0
+     ],
+     "confidence": 0.18
+    },
+    {
+     "xyxy": [
+      875.0,
+      427.0,
+      925.0,
+      453.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    },
+    {
+     "det": 1,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 15,
+     "xyxy": [
+      431.0033,
+      327.0,
+      505.0033,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      443.0,
+      327.0,
+      517.0,
+      363.0
+     ],
+     "confidence": 0.18
+    },
+    {
+     "xyxy": [
+      875.0,
+      427.0,
+      925.0,
+      453.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    },
+    {
+     "det": 1,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 16,
+     "xyxy": [
+      443.0019,
+      327.0,
+      517.0019,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      455.0,
+      327.0,
+      529.0,
+      363.0
+     ],
+     "confidence": 0.18
+    },
+    {
+     "xyxy": [
+      875.0,
+      427.0,
+      925.0,
+      453.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    },
+    {
+     "det": 1,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 17,
+     "xyxy": [
+      455.0009,
+      327.0,
+      529.0009,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      467.0,
+      327.0,
+      541.0,
+      363.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 18,
+     "xyxy": [
+      467.0003,
+      327.0,
+      541.0003,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      479.0,
+      327.0,
+      553.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 19,
+     "xyxy": [
+      479.0,
+      327.0,
+      553.0,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      491.0,
+      327.0,
+      565.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 20,
+     "xyxy": [
+      490.9999,
+      327.0,
+      564.9999,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      503.0,
+      327.0,
+      577.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 21,
+     "xyxy": [
+      502.9998,
+      327.0,
+      576.9998,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      515.0,
+      327.0,
+      589.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 22,
+     "xyxy": [
+      514.9999,
+      327.0,
+      588.9999,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      527.0,
+      327.0,
+      601.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 23,
+     "xyxy": [
+      526.9999,
+      327.0,
+      600.9999,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      539.0,
+      327.0,
+      613.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 24,
+     "xyxy": [
+      538.9999,
+      327.0,
+      612.9999,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      551.0,
+      327.0,
+      625.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 25,
+     "xyxy": [
+      551.0,
+      327.0,
+      625.0,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      563.0,
+      327.0,
+      637.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 26,
+     "xyxy": [
+      563.0,
+      327.0,
+      637.0,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      575.0,
+      327.0,
+      649.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 27,
+     "xyxy": [
+      575.0,
+      327.0,
+      649.0,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      587.0,
+      327.0,
+      661.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 28,
+     "xyxy": [
+      587.0,
+      327.0,
+      661.0,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      599.0,
+      327.0,
+      673.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 29,
+     "xyxy": [
+      599.0,
+      327.0,
+      673.0,
+      363.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      611.0,
+      327.0,
+      685.0,
+      363.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 30,
+     "xyxy": [
+      611.0,
+      327.0,
+      685.0,
+      363.0
+     ]
+    }
+   ]
+  }
+ ],
+ "ambiente": {
+  "python": "3.11.15",
+  "trackers": "2.6.1",
+  "supervision": "0.30.5",
+  "numpy": "2.3.5",
+  "scipy": "1.17.1"
+ }
+}

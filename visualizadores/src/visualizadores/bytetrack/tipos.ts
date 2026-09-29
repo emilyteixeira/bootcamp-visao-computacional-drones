@@ -87,6 +87,8 @@ export interface TrackSnapshot {
   id: number;
   estado: EstadoTrilha;
   caixa: Caixa;
+  // Caixa prevista pelo Kalman neste quadro, antes da associação (igual à inicial no nascimento).
+  caixaPrevista: Caixa;
   semAtualizar: number;
   maxPerdido: number;
   score: number;
@@ -143,6 +145,8 @@ export interface Cenario {
   veiculos: Veiculo[];
   oclusores: Oclusor[];
   detector: ModeloDetector;
+  // Sequência fixa de detecções (microcena): substitui o detector simulado.
+  deteccoesFixas?: Deteccao[][];
 }
 
 export type TipoEvento = 'troca' | 'fragmento' | 'etapa2' | 'nova';

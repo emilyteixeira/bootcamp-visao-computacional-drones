@@ -184,15 +184,70 @@ function trajetoriasVerdade(verdade: GtNoQuadro[][], ate: number): Map<number, P
   return porId;
 }
 
+// Passo a passo dentro de um quadro (curso): o que o rastreador sabe em cada momento.
+export type FaseQuadro = 'previsao' | 'etapa1' | 'etapa2' | 'resultado';
+
+const centro = (c: Caixa): [number, number] => pxParaMundo((c[0] + c[2]) / 2, (c[1] + c[3]) / 2);
+
+// Mostra previsões e pares de uma fase: caixas previstas (tracejadas, cor do ID), detecções
+// separadas em alta e baixa e um conector com o IoU para cada par aceito até a fase atual.
+function CamadaFase({ res, fase, y, limiarAlta }: { res: Instantaneo; fase: Exclude<FaseQuadro, 'resultado'>; y: number; limiarAlta: number }) {
+  const nascidas = new Set(res.log.novas.map((n) => n.trilha));
+  const existentes = res.trilhas.filter((t) => !nascidas.has(t.interno));
+  const porInterno = new Map(res.trilhas.map((t) => [t.interno, t]));
+  const pares = [
+    ...(fase !== 'previsao' ? res.log.etapa1.map((e) => ({ ...e, etapa: 1 as const })) : []),
+    ...(fase === 'etapa2' ? res.log.etapa2.map((e) => ({ ...e, etapa: 2 as const })) : []),
+  ];
+  const usadas = new Set(pares.map((p) => p.det));
+  return (
+    <group>
+      {existentes.map((t) => (
+        <group key={`p${t.interno}`}>
+          <Retangulo caixa={t.caixaPrevista} y={y + 0.01} cor={corDoId(t.id)} espessura={1.4} tracejado opacidade={0.9} />
+          <Html position={[pxParaMundo(t.caixaPrevista[0], t.caixaPrevista[1])[0], y, pxParaMundo(t.caixaPrevista[0], t.caixaPrevista[1])[1]]} className="rotulo-trilha perdida" style={{ '--cor': corDoId(t.id) } as CSSProperties} zIndexRange={[20, 10]}>
+            {t.id >= 0 ? `#${t.id}` : 'tent.'} <small>prevista</small>
+          </Html>
+        </group>
+      ))}
+      {res.deteccoes.map((d, i) => {
+        const alta = d.score >= limiarAlta;
+        const par = pares.find((p) => p.det === i);
+        const cor = par ? COR_ETAPA[par.etapa] : alta ? COR_ETAPA[1] : COR_ETAPA.descartada;
+        return <Retangulo key={`d${i}`} caixa={d.caixa} y={y} cor={cor} espessura={par || alta ? 1.6 : 1.2} tracejado={!alta} opacidade={usadas.has(i) || fase === 'previsao' ? 0.95 : 0.6} />;
+      })}
+      {pares.map((p) => {
+        const t = porInterno.get(p.trilha);
+        const d = res.deteccoes[p.det];
+        if (!t || !d) return null;
+        const [ax, az] = centro(t.caixaPrevista);
+        const [bx, bz] = centro(d.caixa);
+        return (
+          <group key={`l${p.etapa}-${p.trilha}`}>
+            <Line points={[[ax, y + 0.02, az], [bx, y + 0.02, bz]]} color={COR_ETAPA[p.etapa]} lineWidth={2.5} depthTest={false} renderOrder={12} />
+            <Html position={[(ax + bx) / 2, y + 0.02, (az + bz) / 2]} center className="rotulo-iou" zIndexRange={[30, 20]}>
+              IoU {p.iou.toFixed(2)}
+            </Html>
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
 interface PropsCena3D {
   cenario: Cenario;
   cena: Cena;
   resultados: Instantaneo[];
   quadro: number;
   camadas: Camadas;
+  faseQuadro?: FaseQuadro;
+  limiarAlta?: number;
+  // Índice da detecção destacada pelo inspetor (curso).
+  destaque?: number | null;
 }
 
-export default function Cena3D({ cenario, cena, resultados, quadro, camadas }: PropsCena3D) {
+export default function Cena3D({ cenario, cena, resultados, quadro, camadas, faseQuadro = 'resultado', limiarAlta = 0.25, destaque = null }: PropsCena3D) {
   const res = resultados[quadro];
   const yAnot = camadas.espacoTempo ? quadro * PASSO_TEMPO + 0.02 : Y_ANOTACAO;
   const trajs = useMemo(() => (camadas.espacoTempo ? trajetorias(resultados, quadro) : null), [camadas.espacoTempo, resultados, quadro]);
@@ -208,7 +263,13 @@ export default function Cena3D({ cenario, cena, resultados, quadro, camadas }: P
         <Retangulo key={`x${i}`} caixa={d.caixa} y={yAnot} cor={COR_ETAPA.detector} espessura={1} tracejado opacidade={0.7} />
       ))}
 
-      {camadas.deteccoes && res.deteccoes.map((d, i) => (
+      {faseQuadro !== 'resultado' && <CamadaFase res={res} fase={faseQuadro} y={yAnot} limiarAlta={limiarAlta} />}
+
+      {destaque !== null && res.deteccoes[destaque] && (
+        <Retangulo caixa={res.deteccoes[destaque].caixa.map((v, k) => v + (k < 2 ? -9 : 9)) as Caixa} y={yAnot + 0.03} cor="#f08a24" espessura={3.5} />
+      )}
+
+      {faseQuadro === 'resultado' && camadas.deteccoes && res.deteccoes.map((d, i) => (
         <group key={`d${i}`}>
           <Retangulo
             caixa={d.caixa}
@@ -226,7 +287,7 @@ export default function Cena3D({ cenario, cena, resultados, quadro, camadas }: P
         </group>
       ))}
 
-      {camadas.trilhas && res.trilhas.map((t) => {
+      {faseQuadro === 'resultado' && camadas.trilhas && res.trilhas.map((t) => {
         const perdida = t.semAtualizar > 0;
         const cor = corDoId(t.id);
         const [lx, lz] = pxParaMundo(t.caixa[0], t.caixa[1]);

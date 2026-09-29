@@ -120,6 +120,15 @@ def fixtures():
     q.append(executar("ambiguidade-limiar", "Atribuição ótima seguida de rejeição pelo IoU mínimo.",
                       [[{"xyxy": a, "confidence": 0.9}, {"xyxy": b, "confidence": 0.9}]] * 2
                       + [[{"xyxy": d1, "confidence": 0.9}, {"xyxy": d2, "confidence": 0.9}]] * 2))
+    # 14. Microcena do curso (src/visualizadores/bytetrack/microcena.ts): mesma sequência, dois filtros.
+    micro = []
+    for t in range(30):
+        quadro = [det(300 + 12 * t, 345, 0.18 if 10 <= t <= 17 else 0.9, 74, 36)]
+        if 12 <= t <= 16:
+            quadro.append(det(900, 440, 0.18, 50, 26))
+        micro.append(quadro)
+    q.append(executar("microcena-filtro-010", "Microcena do curso com filtro 0,10 e buffer 5.", micro, lost_track_buffer=5))
+    q.append(executar("microcena-filtro-025", "Microcena do curso com filtro 0,25 e buffer 5.", micro, limiar_detector=0.25, lost_track_buffer=5))
     # 13. Movimento constante com oclusão: compara a previsão de Kalman (XYXY vs cx,cy,w,h local).
     seq = [[det(100 + 12 * t, 200 + 3 * t, 0.9, 60, 30)] if not 8 <= t < 13 else [] for t in range(20)]
     q.append(executar("kalman-oclusao", "Velocidade constante e lacuna de 5 quadros.", seq))
