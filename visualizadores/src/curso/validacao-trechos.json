@@ -1,0 +1,48 @@
+{
+ "data": "2026-09-29",
+ "ambiente": {
+  "python": "3.11.15",
+  "supervision": "0.30.5",
+  "trackers": "2.6.1",
+  "numpy": "2.3.5",
+  "opencv-python": "5.0.0.93"
+ },
+ "resultados": {
+  "nb02-c17-detectar": {
+   "status": "ok",
+   "saida": "",
+   "execucao": "ilustrativo",
+   "hashCodigo": "d71a71cc2bc1ea6844cb33478cd1f4a5f9eb26f53346816fe616cfaeb86aeeda"
+  },
+  "nb01-formatos": {
+   "status": "ok",
+   "saida": "xyxy: [180. 327. 254. 363.]\nxywh: [180. 327.  74.  36.]\ncxcywh: [217. 345.  74.  36.]\n",
+   "execucao": "executado",
+   "hashCodigo": "6749cdc3ac7bd8e9b13ec84360709f8fdc60f3b462bcd13d5c2e6867cec51929"
+  },
+  "nb02-c22-rastreador": {
+   "status": "ok",
+   "saida": "",
+   "execucao": "executado",
+   "hashCodigo": "0dc8cdf282e4f99fd14cc38eba1e6161cdb14edfcbc4a5d278635a218b361df4"
+  },
+  "nb02-c28-processar": {
+   "status": "ok",
+   "saida": "",
+   "execucao": "executado",
+   "hashCodigo": "0e893863c0e11b6a3b4d81c5686b50abfdc890b9516a5eeaf5911542355f77bd"
+  },
+  "curso-pipeline-minimo": {
+   "status": "ok",
+   "saida": "0 [-1]\n1 [0]\n2 [0]\n",
+   "execucao": "executado",
+   "hashCodigo": "3ae9db3a9b62fe4d1505bf2946b6d92eccd18590c6a658b0c45b946e7bb71524"
+  },
+  "nb03-c22-ultralytics": {
+   "status": "ok",
+   "saida": "",
+   "execucao": "ilustrativo",
+   "hashCodigo": "2b8f129966928a50571a14b79f2338580a56d6f64c2adc4e676873498a34df05"
+  }
+ }
+}

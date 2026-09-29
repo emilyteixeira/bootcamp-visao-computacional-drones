@@ -58,6 +58,8 @@ test('roteiro: marcação inline balanceada (` e **)', () => {
   for (const t of textos) {
     assert.equal((t.match(/`/g) ?? []).length % 2, 0, t);
     assert.equal((t.match(/\*\*/g) ?? []).length % 2, 0, t);
+    // TextoRico não aninha marcações: crase dentro de negrito apareceria literal.
+    t.split('**').filter((_, i) => i % 2 === 1).forEach((negrito) => assert.ok(!negrito.includes('`'), t));
   }
 });
 
@@ -182,10 +184,16 @@ test('parâmetros do passo = predefinição + ajustes', () => {
 });
 
 // ─── Etapa 3: comparação A/B, microcena, associação manual ─────────────────
-test('comparações A/B mudam exatamente um parâmetro', () => {
+test('comparações A/B mudam exatamente um parâmetro (ou só o motor, no replay)', () => {
   for (const p of passos) {
     if (!p.comparacao) continue;
     const a = parametrosDoPasso(p.cena);
+    // Com replay, o que muda é o motor (JS × Python); os parâmetros precisam ser os mesmos.
+    if (p.comparacao.replayB) {
+      assert.equal(p.comparacao.ajustesB, undefined, p.id);
+      assert.equal(p.parametroLivre, undefined, `${p.id}: replay não aceita parâmetro livre`);
+      continue;
+    }
     const b = parametrosB(p.cena, p.comparacao);
     const diferentes = (Object.keys(a) as (keyof ParametrosByteTrack)[]).filter((k) => a[k] !== b[k]);
     assert.equal(diferentes.length, 1, `${p.id}: ${diferentes.join(', ')}`);
@@ -240,5 +248,54 @@ test('associação manual do cap. 1: rastreador acerta todas as caixas do quadro
     const real = d.gtId == null ? -1 : a.findIndex((x) => x.gtId === d.gtId);
     const doRastreador = (d.id ?? -1) < 0 ? -1 : a.findIndex((x) => x.id === d.id);
     assert.equal(doRastreador, real);
+  }
+});
+
+// ─── Etapa 4: replays do trackers 2.6.1 ─────────────────────────────────────
+test('replays: ligados às detecções atuais da cena e ao notebook 02', async () => {
+  const { createHash } = await import('node:crypto');
+  const { REPLAYS, hashDeteccoes } = await import('../src/curso/replay.ts');
+  const cena = cenaDe('oclusao');
+  const hash = hashDeteccoes(cena.deteccoes, (t) => createHash('sha256').update(t).digest('hex'));
+  for (const [nome, carregar] of Object.entries(REPLAYS)) {
+    const r = await carregar();
+    assert.equal(r.hashDeteccoes, hash, `${nome}: detecções da cena mudaram; regenere o replay`);
+    assert.equal(r.ambiente.trackers, '2.6.1');
+    assert.equal(r.quadros.length, cena.deteccoes.length);
+    const { lost_track_buffer: _b, limiar_detector: lim, ...resto } = r.parametros;
+    const { lost_track_buffer: _b2, limiar_detector: lim2, ...restoNb } = nb('nb02');
+    assert.deepEqual({ ...resto, lim }, { ...restoNb, lim: lim2 }, nome);
+  }
+});
+
+test('texto do passo c5-python: números do replay', async () => {
+  const { REPLAYS, instantaneosDoReplay } = await import('../src/curso/replay.ts');
+  const cena = cenaDe('oclusao');
+  const py = instantaneosDoReplay(await REPLAYS['oclusao-nb02'](), cena);
+  const largura = (r: typeof py, q: number) => { const t = r[q].trilhas.find((x) => x.id === 1)!; return Math.round(t.caixa[2] - t.caixa[0]); };
+  assert.deepEqual([95, 100, 106].map((q) => largura(py, q)), [26, 17, 7]);
+  assert.equal(largura(rodar('oclusao', nb('nb02')), 95), 54);
+  assert.equal(py[106].deteccoes.find((d) => d.gtId === 3)!.id, null);
+  assert.equal(py[110].deteccoes.find((d) => d.gtId === 3)!.id, 5);
+  const m = avaliar(cena, py);
+  assert.deepEqual([m.idsCriados, m.trocasId], [9, 4]);
+  const m60 = avaliar(cena, instantaneosDoReplay(await REPLAYS['oclusao-nb02-buffer60'](), cena));
+  assert.deepEqual([m60.idsCriados, m60.trocasId], [9, 4]);
+});
+
+test('trechos Python: todos validados nas versões fixadas e sem edição posterior', async () => {
+  const { createHash } = await import('node:crypto');
+  const { TRECHOS, VALIDACAO } = await import('../src/curso/trechos.ts');
+  assert.equal(VALIDACAO.ambiente.supervision, '0.30.5');
+  assert.equal(VALIDACAO.ambiente.trackers, '2.6.1');
+  const usados = new Set(passos.flatMap((p) => p.codigo ?? []));
+  for (const id of usados) assert.ok(TRECHOS[id], `trecho ${id} inexistente`);
+  for (const t of Object.values(TRECHOS)) {
+    const v = VALIDACAO.resultados[t.id];
+    assert.ok(v, `${t.id}: sem validação; rode scripts/validar-trechos.py`);
+    assert.equal(v.status, 'ok', t.id);
+    assert.equal(v.execucao, t.execucao, t.id);
+    assert.equal(v.hashCodigo, createHash('sha256').update(t.codigo).digest('hex'), `${t.id}: código mudou depois da validação`);
+    if (t.execucao === 'ilustrativo') assert.ok(t.motivo && t.requer?.length, `${t.id}: ilustrativo precisa de motivo e API conferida`);
   }
 });

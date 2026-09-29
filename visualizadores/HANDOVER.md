@@ -203,3 +203,13 @@ Histórico: [docs/historico/2026-09-27-sessao-etapa2-curso.md](docs/historico/20
 - **Associação manual** (`AssociacaoManual.tsx`) no cap. 1, quadros 60 → 61; "Real" = verdade de solo, "Rastreador" = tracker_id.
 - `versaoConteudo` → `2026-09-29.1` (34 passos): progresso antigo recomeça com aviso.
 - Verificação: typecheck 0; `npm test` 47/47 (20 fixtures Python); visuais 10/10 sem atualizar referências.
+
+## 14. Etapa 4 — Supervision, trechos validados e replay Python — 29/09/2026
+
+- **Replay do trackers 2.6.1** (`src/curso/replay.ts`, `src/curso/replays/*.json`, ~40 KB cada, import dinâmico): saída gravada do `ByteTrackTracker` sobre as mesmas detecções da cena "Árvore e viaduto" (notebook 02; e com buffer 60). Gerado por `npx tsx scripts/exportar-cenas.ts oclusao > cena.json` + `python scripts/exportar-replays-bytetrack.py cena.json oclusao-nb02 [lost_track_buffer=60]`. Cada replay guarda versões e **sha256 das detecções**; `tests/curso.test.ts` falha se a cena mudar sem regenerar. Etapas das caixas no replay são inferidas (score × tracker_id).
+- Passo novo `c5-python` (A = simulação JS, B = replay): caixa prevista de `#1` no Python 26 → 17 → 7 px (q95/100/106) contra 54 px no JS; veículo 3 vira `#5` no q110; Python 9 IDs / 4 trocas (também com buffer 60) contra 7 / 2 no JS. Faixa de proveniência sob o palco; selo "Replay Python · trackers 2.6.1" no HUD e "Simulação JS" no lado A.
+- **Trechos Python validados**: fonte única `src/curso/trechos.json` (6 trechos); `scripts/validar-trechos.py` executa os "executado" (preparo + código + verificação) e confere a API dos "ilustrativo" (dependem de RF-DETR/ultralytics e pesos). Resultado em `src/curso/validacao-trechos.json` (supervision 0.30.5, trackers 2.6.1, numpy 2.3.5, opencv 5.0.0.93, Python 3.11.15), com saída impressa e hash do código. Teste falha se um trecho for editado sem revalidar. **A CI não roda Python**: revalidar localmente ao editar trechos.
+- **Inspetor `sv.Detections`**: linha ↔ caixa destacada na cena (mouse/foco), formatos xyxy/xywh/cxcywh, máscara `confidence >= …` só de consulta. Tabela de adaptadores no cap. 6.
+- Ligaduras desligadas em código (`!=` e `>=` apareciam como ≠ e ≥).
+- **Problema encontrado, pré-existente (já no commit base `df5e24f`)**: `dist-link/laboratorio-bytetrack.html` aberto direto no navegador dá `SyntaxError` por falta de `<meta charset>`; é intencional (fragmento para o publicador de Artifacts, que envolve o documento). Para testar localmente, abrir `dist-link/index.html`. Replay conferido nesse arquivo.
+- `versaoConteudo` → `2026-09-29.3` (35 passos). Verificação: typecheck 0; `npm test` 50/50; visuais 12/12.

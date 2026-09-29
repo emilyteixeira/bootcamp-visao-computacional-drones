@@ -23,6 +23,7 @@ import LinhaDeEstados from './componentes/LinhaDeEstados.tsx';
 import PainelRoteiro from './componentes/PainelRoteiro.tsx';
 import ResumoClipe from './componentes/ResumoClipe.tsx';
 import ResumoComparacao from './componentes/ResumoComparacao.tsx';
+import { instantaneosDoReplay, REPLAYS, type Replay } from './replay.ts';
 import type { Aula } from './tipos.ts';
 import type { usarAula } from './usarAula.ts';
 
@@ -60,6 +61,8 @@ interface Lado {
   parametros: ParametrosByteTrack;
   resultados: Instantaneo[];
   metricas: Metricas;
+  // Proveniência visível no palco: simulação JS no navegador ou saída gravada do Python.
+  origem: 'simulacao' | 'replay';
 }
 
 export default function AulaShell({ aula, estado }: { aula: Aula; estado: EstadoAula }) {
@@ -74,6 +77,8 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
   const [camadas, setCamadas] = useState<Camadas>({ ...SEM_CAMADAS, ...alvo.camadas });
   const [fase, setFase] = useState<FaseQuadro>('resultado');
   const [animando, setAnimando] = useState(false);
+  const [destaque, setDestaque] = useState<number | null>(null);
+  const [replay, setReplay] = useState<{ nome: string; dados: Replay | null; erro?: string } | null>(null);
   const vpA = useRef<ControleViewport>(null);
   const vpB = useRef<ControleViewport>(null);
   const rep = usarReproducao(cenario.quadros, 30, false, alvo.quadro);
@@ -84,12 +89,27 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
     setCamadas({ ...SEM_CAMADAS, ...alvo.camadas });
     setFase('resultado');
     setAnimando(false);
+    setDestaque(null);
     rep.setTocando(false);
     rep.irPara(alvo.quadro);
     if (alvo.vista) vpA.current?.irPara(alvo.vista);
     // Reage só à troca de passo: `alvo` e `rep` mudam de identidade a cada render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [passo.id]);
+
+  // Replay Python carregado sob demanda (fica fora do pacote principal).
+  useEffect(() => {
+    const nome = comp?.replayB;
+    if (!nome) { setReplay(null); return; }
+    let vivo = true;
+    setReplay({ nome, dados: null });
+    const carregar = REPLAYS[nome];
+    if (!carregar) { setReplay({ nome, dados: null, erro: `Replay desconhecido: ${nome}` }); return; }
+    carregar()
+      .then((dados) => { if (vivo) setReplay({ nome, dados }); })
+      .catch(() => { if (vivo) setReplay({ nome, dados: null, erro: 'Não foi possível carregar o replay neste link.' }); });
+    return () => { vivo = false; };
+  }, [comp?.replayB]);
 
   // Animação das fases do quadro: avança uma fase a cada 1,4 s e para no resultado.
   useEffect(() => {
@@ -102,11 +122,18 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
   const cena = useMemo(() => gerarCena(cenario), [cenario]);
   const resA = useMemo(() => executar(cena, parametros), [cena, parametros]);
   const metA = useMemo(() => avaliar(cena, resA), [cena, resA]);
-  const resB = useMemo(() => (paramsB ? executar(cena, paramsB) : null), [cena, paramsB]);
+  const replayPronto = replay?.dados && replay.nome === comp?.replayB ? replay.dados : null;
+  const resB = useMemo(() => {
+    if (comp?.replayB) return replayPronto ? instantaneosDoReplay(replayPronto, cena) : null;
+    return paramsB ? executar(cena, paramsB) : null;
+  }, [cena, paramsB, comp?.replayB, replayPronto]);
   const metB = useMemo(() => (resB ? avaliar(cena, resB) : null), [cena, resB]);
 
-  const lados: Lado[] = [{ chave: 'A', rotulo: comp?.rotuloA ?? '', parametros, resultados: resA, metricas: metA }];
-  if (comp && paramsB && resB && metB) lados.push({ chave: 'B', rotulo: comp.rotuloB, parametros: paramsB, resultados: resB, metricas: metB });
+  const lados: Lado[] = [{ chave: 'A', rotulo: comp?.rotuloA ?? '', parametros, resultados: resA, metricas: metA, origem: 'simulacao' }];
+  if (comp && resB && metB) {
+    lados.push({ chave: 'B', rotulo: comp.rotuloB, parametros: replayPronto?.parametros ?? paramsB ?? parametros, resultados: resB, metricas: metB, origem: comp.replayB ? 'replay' : 'simulacao' });
+  }
+  const aguardandoReplay = !!comp?.replayB && !replayPronto;
 
   const quadro = Math.min(rep.quadro, cenario.quadros - 1);
   const res = resA[quadro];
@@ -141,7 +168,7 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
       {passo.mostrarDeteccoes && (
         <details className="extra" open>
           <summary>Detecções do quadro {quadro}</summary>
-          <InspetorDetections res={res} />
+          <InspetorDetections res={res} destaque={destaque} aoDestacar={setDestaque} />
         </details>
       )}
       {passo.mostrarEtapas && (
@@ -159,7 +186,7 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
         <p className="bt-resumo">
           <strong>{cenario.titulo}.</strong> {cenario.resumo}
         </p>
-        <div className={`palco-lados ${lados.length > 1 ? 'ab' : ''}`}>
+        <div className={`palco-lados ${lados.length > 1 || aguardandoReplay ? 'ab' : ''}`}>
           {lados.map((l) => {
             const r = l.resultados[quadro];
             return (
@@ -171,11 +198,14 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
                   aoMoverCamera={lados.length > 1 ? sincronizar(l.chave === 'A' ? vpB : vpA) : undefined}
                   rotulo={`Cena 3D${lados.length > 1 ? ` ${l.chave}: ${l.rotulo}` : ''}, quadro ${quadro}`}
                 >
-                  <Cena3D cenario={cenario} cena={cena} resultados={l.resultados} quadro={quadro} camadas={camadas} faseQuadro={fase} limiarAlta={l.parametros.high_conf_det_threshold} />
+                  <Cena3D cenario={cenario} cena={cena} resultados={l.resultados} quadro={quadro} camadas={camadas} faseQuadro={l.origem === 'replay' ? 'resultado' : fase} limiarAlta={l.parametros.high_conf_det_threshold} destaque={l.chave === 'A' ? destaque : null} />
                 </Viewport3D>
                 <div className="hud hud-topo">
                   {lados.length > 1 && <span className={`selo-ab ${l.chave === 'B' ? 'b' : ''}`}>{l.chave}</span>}
                   {lados.length > 1 && <span>{l.rotulo}</span>}
+                  <span className={`origem origem-${l.origem}`} title={l.origem === 'replay' ? 'Saída gravada do trackers 2.6.1 em Python sobre as mesmas detecções' : 'Motor didático em TypeScript executado no navegador'}>
+                    {l.origem === 'replay' ? 'Replay Python · trackers 2.6.1' : 'Simulação JS'}
+                  </span>
                   <span className="mono">Q {String(quadro).padStart(3, '0')} · {(quadro / 30).toFixed(2)} s</span>
                   {lados.length > 1 && <span><b className="mono">{r.trilhas.filter((t) => t.id >= 0 && t.semAtualizar === 0).length}</b> IDs visíveis</span>}
                   {lados.length === 1 && quadro !== alvo.quadro && <span>quadro do passo: <b className="mono">{alvo.quadro}</b></span>}
@@ -201,7 +231,17 @@ export default function AulaShell({ aula, estado }: { aula: Aula; estado: Estado
               </div>
             );
           })}
+          {aguardandoReplay && (
+            <div className="bt-viewport replay-carregando" role="status">
+              {replay?.erro ?? 'Carregando o replay do Python…'}
+            </div>
+          )}
         </div>
+        {replayPronto && (
+          <p className="proveniencia">
+            <strong>B é uma gravação, não uma simulação:</strong> saída de <code>trackers.ByteTrackTracker</code> {replayPronto.ambiente.trackers} (supervision {replayPronto.ambiente.supervision}, numpy {replayPronto.ambiente.numpy}, Python {replayPronto.ambiente.python}) sobre as mesmas detecções desta cena (sha256 {replayPronto.hashDeteccoes.slice(0, 12)}…). Etapas das caixas inferidas pelo score e pelo tracker_id. Gerada por <code>scripts/exportar-replays-bytetrack.py</code>.
+          </p>
+        )}
 
         {passo.faseQuadro && (
           <div className="fases-quadro" role="group" aria-label="Passo a passo do quadro">

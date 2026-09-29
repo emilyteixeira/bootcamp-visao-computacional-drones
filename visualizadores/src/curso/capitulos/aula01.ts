@@ -6,7 +6,7 @@ import type { Aula } from '../tipos.ts';
 
 export const AULA_01: Aula = {
   id: 'aula-01-bytetrack',
-  versaoConteudo: '2026-09-29.1',
+  versaoConteudo: '2026-09-29.3',
   titulo: 'Como manter a identidade quando a detecção falha?',
   publico: 'Para quem já entende caixas, classes e confiança de um detector e está começando em rastreamento de objetos.',
   abertura: 'O carro não desapareceu do mundo. Por que desapareceu do rastreamento?',
@@ -108,15 +108,11 @@ export const AULA_01: Aula = {
             'A tabela abaixo lista as detecções do quadro 61 que chegaram ao rastreador. No Python, elas vivem num objeto `sv.Detections`: arrays alinhados em que a linha *i* de `xyxy`, `confidence` e `class_id` descreve a mesma caixa.',
             'Filtrar um `sv.Detections` com uma máscara booleana preserva esse alinhamento (notebook 01, célula 22). Antes do rastreamento, `tracker_id` é `None`; depois de `tracker.update(...)`, cada linha ganha um inteiro.',
             'A cena simulada tem uma única classe (veículo). Nos notebooks, `class_id` e `data["class_name"]` vêm do checkpoint do detector.',
+            'Na tabela, passe o mouse ou use Tab sobre uma linha: a mesma caixa é destacada em laranja na cena. Alterne entre `xyxy`, `xywh` e `cxcywh` para ver a mesma região em três representações (notebook 01, células 25–28) e mova a máscara `confidence >= …` para ver quais linhas um filtro manteria. O segundo trecho abaixo faz essa conversão em Python e foi executado nas versões fixadas.',
           ],
           cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 61, vista: 'topo', camadas: { deteccoes: true, scores: true, trilhas: false, verdade: true } },
           mostrarDeteccoes: true,
-          codigo: [
-            {
-              origem: 'projeto-3/02_tracking.ipynb, célula 17',
-              codigo: 'def detectar(quadro):\n    rgb = cv2.cvtColor(quadro, cv2.COLOR_BGR2RGB)\n    deteccoes = modelo.predict(rgb, threshold=LIMIAR_DETECTOR,\n                               include_source_image=False)\n    selecionadas = np.isin(deteccoes["class_name"], classes_veiculos)\n    return deteccoes[selecionadas]',
-            },
-          ],
+          codigo: ['nb02-c17-detectar', 'nb01-formatos'],
           fontes: ['nb01', 'nb02', 'sv-detections', 'pdf-supervision'],
         },
         {
@@ -213,7 +209,7 @@ export const AULA_01: Aula = {
             'O esquema vem do SORT (2016): um filtro de Kalman de velocidade constante prevê cada trilha; depois, uma matriz de IoU entre caixas previstas e detecções entra num algoritmo de atribuição (húngaro) que escolhe o conjunto de pares de maior sobreposição total. Pares abaixo de `minimum_iou_threshold` são descartados depois da atribuição.',
             'IoU = área da interseção ÷ área da união. Duas caixas idênticas dão 1; caixas separadas dão 0. No painel **Etapas do quadro**, abaixo deste texto, cada par aparece com seu IoU.',
             'Neste quadro (106) o carro sai de baixo do viaduto. A previsão ainda se sobrepõe à caixa detectada, com IoU **0,12**, pouco acima do mínimo de 0,10, e a trilha `#1` é **reencontrada** com o mesmo ID. Use **Passo a passo do quadro**, abaixo da cena, para ver primeiro as caixas previstas, depois os pares de cada etapa com o IoU desenhado entre eles.',
-            '**Limite desta simulação:** o Kalman do laboratório congela o tamanho da caixa enquanto a trilha está perdida. O `trackers` 2.6.1 usa outro estado (cantos da caixa) e deixa a caixa prevista encolher; nesta mesma cena, no Python, a sobreposição cai a zero e o carro recebe um ID novo. A qualidade da previsão decide se a associação é possível.',
+            '**Limite desta simulação:** o Kalman do laboratório congela o tamanho da caixa enquanto a trilha está perdida. O `trackers` 2.6.1 usa outro estado (cantos da caixa) e deixa a caixa prevista encolher; nesta mesma cena, no Python, a sobreposição cai a zero e o carro recebe um ID novo. A qualidade da previsão decide se a associação é possível. O capítulo 5 mostra a gravação do Python lado a lado.',
           ],
           cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 106, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
           mostrarEtapas: true,
@@ -292,12 +288,7 @@ export const AULA_01: Aula = {
           cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 67, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, scores: true } },
           mostrarEtapas: true,
           faseQuadro: true,
-          codigo: [
-            {
-              origem: 'projeto-3/02_tracking.ipynb, célula 22',
-              codigo: 'from trackers import ByteTrackTracker\ndef criar_rastreador():\n    return ByteTrackTracker(frame_rate=info.fps,\n        high_conf_det_threshold=0.25, track_activation_threshold=0.35,\n        minimum_consecutive_frames=2, minimum_iou_threshold=0.10,\n        lost_track_buffer=30)',
-            },
-          ],
+          codigo: ['nb02-c22-rastreador'],
           fontes: ['bytetrack', 'trackers-src', 'nb02'],
         },
         {
@@ -455,6 +446,21 @@ export const AULA_01: Aula = {
           fontes: ['nb02', 'trackers-src'],
         },
         {
+          id: 'c5-python',
+          fase: 'explicar',
+          titulo: 'O mesmo clipe no trackers 2.6.1',
+          texto: [
+            'Até aqui o palco mostrou o motor didático em TypeScript. Agora **A** é essa simulação (notebook 02) e **B** é a **saída gravada do trackers 2.6.1 em Python** (`ByteTrackTracker`) sobre exatamente as mesmas detecções. B não roda no navegador: é um replay, com versões e hash das detecções registrados abaixo da cena.',
+            'Quadro 95, trilha `#1` sob o viaduto. Em A, a caixa prevista mantém cerca de 54 px de largura, porque o motor didático congela o tamanho enquanto a trilha está perdida. Em B ela já tem 26 px; no quadro 100, 17 px; no 106, 7 px. Avance a linha do tempo e veja a caixa tracejada de B encolher.',
+            'No quadro 106, a caixa de 0,17 que recupera `#1` em A fica sem par em B: a sobreposição com uma caixa de 7 px é zero. No quadro 110 o carro reaparece como `#5`. No clipe inteiro, o Python emite 9 IDs com 4 trocas; a simulação, 7 e 2.',
+            'Aumentar o buffer não resolve no Python: também gravamos o replay com buffer 60, e o resultado é o mesmo (9 IDs, 4 trocas), porque a caixa prevista chega a largura negativa antes de o carro sair do viaduto.',
+            'Por isso a aula trata o efeito do buffer como dependente da previsão. As regras de associação e de ciclo de vida do laboratório são as do `trackers` 2.6.1, conferidas em 20 sequências de teste; a previsão de tamanho é a diferença conhecida e mantida de propósito.',
+          ],
+          cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 95, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true, raioX: true } },
+          comparacao: { rotuloA: 'Notebook 02', rotuloB: 'Mesmo clipe', replayB: 'oclusao-nb02' },
+          fontes: ['trackers-src', 'nb02'],
+        },
+        {
           id: 'c5-conferir',
           fase: 'conferir',
           titulo: 'Buffer não é garantia',
@@ -492,14 +498,10 @@ export const AULA_01: Aula = {
             '**Supervision** (`supervision==0.30.5`, `sv`) padroniza e manipula os resultados (`sv.Detections`, máscaras, conversões de caixa, âncoras, zonas) e desenha (`BoxAnnotator`, `LabelAnnotator`, `TraceAnnotator`).',
             '**Trackers** (`trackers==2.6.1`) faz a associação temporal: `ByteTrackTracker.update(deteccoes)` recebe um `sv.Detections` e devolve outro, com `tracker_id` preenchido. O antigo `sv.ByteTrack` foi depreciado no Supervision 0.28.0, com remoção prevista para 0.31.0.',
             'A ordem por quadro é sempre: detectar → atualizar o rastreador → filtrar `tracker_id != -1` → anotar. O rastreador deve ser atualizado **mesmo quando não há detecções**, para o relógio de perda avançar (notebook 02, célula 29).',
+            'O segundo trecho reproduz esse fluxo sem detector, com uma caixa escrita à mão, e foi executado com `supervision` 0.30.5 e `trackers` 2.6.1. A saída registrada mostra `-1` no primeiro quadro e o ID `0` a partir do segundo, como no capítulo 5. Os selos de cada trecho dizem se ele foi executado ou é ilustrativo (depende do modelo e dos pesos).',
           ],
           cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 120, vista: 'perspectiva', camadas: { verdade: true, deteccoes: true, trilhas: true } },
-          codigo: [
-            {
-              origem: 'projeto-3/02_tracking.ipynb, célula 28',
-              codigo: 'def processar(quadro, indice, rastreador, rastros, registros):\n    deteccoes = detectar(quadro)\n    retorno = rastreador.update(deteccoes)\n    confirmadas = retorno[retorno.tracker_id != -1]\n    ...\n    return anotar(quadro, confirmadas, rastros)',
-            },
-          ],
+          codigo: ['nb02-c28-processar', 'curso-pipeline-minimo'],
           fontes: ['nb02', 'sv-migracao', 'pdf-byte'],
         },
         {
@@ -507,17 +509,22 @@ export const AULA_01: Aula = {
           fase: 'explicar',
           titulo: 'Adaptadores e cores',
           texto: [
-            'O adaptador depende do **objeto retornado pela biblioteca**, não do nome do modelo: `RFDETRMedium.predict(...)` já devolve `sv.Detections`; um resultado do Ultralytics precisa de `sv.Detections.from_ultralytics(resultado)` (notebook 03, célula 22).',
+            'O adaptador depende do **objeto retornado pela biblioteca**, não do nome do modelo (notebook 01, célula 18). A tabela abaixo resume as entradas usadas no projeto 3.',
             'Cada biblioteca declara sua convenção de cores: o OpenCV entrega quadros em BGR; o notebook converte para RGB antes do RF-DETR. Não suponha conversão automática.',
             'Nos anotadores, `color_lookup=sv.ColorLookup.TRACK` pinta pela identidade, como as cores das trilhas aqui. A paleta tem cores finitas e as repete; o rótulo `#id` continua necessário.',
           ],
           cena: { cenario: 'oclusao', predefinicao: 'nb02', quadro: 120, vista: 'topo', camadas: { verdade: false, deteccoes: false, trilhas: true } },
-          codigo: [
-            {
-              origem: 'projeto-3/03_projeto_final.ipynb, célula 22',
-              codigo: 'resultado = modelo.predict(frame, conf=CONF_DETECTOR, iou=0.50,\n                            imgsz=640, device=DISPOSITIVO, verbose=False)[0]\ndeteccoes = sv.Detections.from_ultralytics(resultado)',
-            },
-          ],
+          tabela: {
+            legenda: 'Da saída do detector ao sv.Detections (notebook 01, célula 18)',
+            colunas: ['Origem do resultado', 'Entrada no Supervision'],
+            linhas: [
+              ['`RFDETRMedium.predict(...)` (pacote `rfdetr`)', 'Já retorna `sv.Detections`'],
+              ['`YOLO(...).predict(...)[0]` (pacote `ultralytics`)', '`sv.Detections.from_ultralytics(resultado)`'],
+              ['Resultado do Roboflow Inference', '`sv.Detections.from_inference(resultado)`'],
+              ['Resultado pós-processado do Transformers', '`sv.Detections.from_transformers(resultado)`'],
+            ],
+          },
+          codigo: ['nb03-c22-ultralytics'],
           fontes: ['nb01', 'nb03', 'sv-detections'],
         },
         {

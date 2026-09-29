@@ -61,3 +61,32 @@ test('laboratório livre continua acessível a partir da aula', async ({ page })
   await page.getByRole('link', { name: 'Abrir o laboratório livre' }).click();
   await expect(page.getByRole('heading', { name: 'Cada caixa conta, até as fracas' })).toBeVisible();
 });
+
+// Abre a aula já num passo (capítulo e passo contados a partir de 0).
+async function abrirNoPasso(page, capitulo, passo) {
+  await page.goto('/#curso-bytetrack');
+  await page.locator('.viewport canvas').first().waitFor();
+  await page.locator('.indice-aula summary').click();
+  await page.locator('.indice button').nth(capitulo).click();
+  for (let i = 0; i < passo; i++) await proximo(page).click();
+  await page.waitForTimeout(1500);
+}
+
+test('replay do trackers 2.6.1 carrega sob demanda com proveniência', async ({ page }) => {
+  await abrirNoPasso(page, 4, 5);
+  await expect(page.getByRole('heading', { name: 'O mesmo clipe no trackers 2.6.1' })).toBeVisible();
+  await expect(page.locator('.origem-replay')).toHaveText('Replay Python · trackers 2.6.1');
+  await expect(page.locator('.proveniencia')).toContainText('B é uma gravação, não uma simulação');
+  await expect(page.locator('.proveniencia')).toContainText('supervision 0.30.5');
+  await expect(page.locator('.viewport canvas')).toHaveCount(2);
+});
+
+test('inspetor destaca a linha focada e alterna formatos', async ({ page }) => {
+  await abrirNoPasso(page, 1, 0);
+  const linha = page.locator('.inspetor tbody tr').first();
+  await linha.focus();
+  await expect(linha).toHaveAttribute('aria-selected', 'true');
+  await page.getByRole('button', { name: 'cxcywh' }).click();
+  await expect(page.locator('.inspetor thead')).toContainText('cxcywh');
+  await expect(page.locator('.codigo .selo-validacao.ok').first()).toContainText('trackers 2.6.1');
+});

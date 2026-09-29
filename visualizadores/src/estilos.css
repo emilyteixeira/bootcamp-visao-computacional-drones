@@ -25,7 +25,8 @@ html, body { height: 100%; }
 body { margin: 0; background: var(--fundo); color: var(--texto); font: 15px/1.5 var(--fonte); }
 #raiz { min-height: 100%; }
 button, select, input { font: inherit; color: inherit; }
-code, .mono, kbd { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+/* Sem ligaduras: `!=` e `>=` precisam aparecer como se digitam (a JetBrains Mono os junta em ≠ e ≥). */
+code, .mono, kbd, pre { font-family: var(--mono); font-variant-numeric: tabular-nums; font-variant-ligatures: none; font-feature-settings: 'calt' 0, 'liga' 0; }
 code { font-size: 0.85em; background: var(--campo); padding: 1px 5px; border-radius: 3px; color: #d7c38a; }
 kbd { font-size: 0.75em; border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; background: var(--painel-2); }
 h1, h2, h3 { text-wrap: balance; margin: 0; }
@@ -299,6 +300,32 @@ a.chip { color: var(--texto-2); text-decoration: none; }
 .resumo-ab th, .resumo-ab td { padding: 4px 8px; border-bottom: 1px solid var(--borda); text-align: left; }
 .resumo-ab thead th { font-weight: 600; color: var(--texto-2); }
 .resumo-ab tr.difere td { color: #ffd27a; font-weight: 600; }
+
+/* Etapa 4: inspetor, trechos validados, replay */
+.inspetor-controles { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 6px 0; }
+.inspetor-formula { font-size: 11px; }
+.inspetor tbody tr { cursor: default; }
+.inspetor tbody tr:hover, .inspetor tbody tr:focus { background: #3a2f16; outline: none; }
+.inspetor tbody tr.destacada { background: #3a2f16; box-shadow: inset 3px 0 0 var(--laranja); }
+.inspetor tbody tr.fora-mascara td { opacity: 0.4; }
+.inspetor-mascara { display: grid; gap: 2px; font-size: 11.5px; padding-top: 6px; color: var(--texto-2); }
+.inspetor-mascara input { accent-color: var(--laranja); }
+.codigo figcaption { display: flex; flex-wrap: wrap; gap: 4px 8px; justify-content: space-between; align-items: center; }
+.selo-validacao { font: 600 10px var(--fonte); letter-spacing: 0.04em; padding: 2px 6px; border-radius: 8px; }
+.selo-validacao.ok { background: #1e3522; color: #9edc9e; }
+.selo-validacao.ilustrativo { background: #33263d; color: #d2b3ec; }
+.selo-validacao.falhou { background: #3a1f1f; color: #f3a5a5; }
+.codigo-nota { margin: 0; padding: 6px 10px; font-size: 12px; color: var(--texto-3); border-top: 1px solid var(--borda); }
+.codigo-saida { border-top: 1px solid var(--borda); padding: 6px 10px; font-size: 11.5px; color: var(--texto-3); }
+.codigo-saida pre { margin: 4px 0 0; color: #9edc9e; font-size: 12px; }
+.origem { font-size: 11px !important; }
+.origem-replay { color: #1d1d1d !important; background: #9edc9e !important; font-weight: 600; }
+.replay-carregando { display: grid; place-items: center; min-height: 300px; color: var(--texto-3); background: #262626; }
+.proveniencia { margin: 0; font-size: 12.5px; color: var(--texto-2); background: #1e3522; border-left: 3px solid #5cb85c; padding: 6px 10px; border-radius: 0 var(--raio) var(--raio) 0; }
+.tabela-passo { border-collapse: collapse; width: 100%; font-size: 13px; }
+.tabela-passo caption { text-align: left; font-size: 12px; color: var(--texto-3); padding-bottom: 4px; }
+.tabela-passo th, .tabela-passo td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--borda); vertical-align: top; }
+.tabela-passo thead th { color: var(--texto-2); }
 
 @media (max-width: 1024px) {
   .bt { grid-template-columns: 1fr; }

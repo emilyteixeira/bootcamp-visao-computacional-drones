@@ -1,0 +1,54 @@
+[
+ {
+  "id": "nb02-c17-detectar",
+  "origem": "projeto-3/02_tracking.ipynb, célula 17",
+  "execucao": "ilustrativo",
+  "motivo": "Chama o RF-DETR (pesos pré-treinados, GPU recomendada); não é executado na validação. Os nomes da API do Supervision usados aqui são conferidos.",
+  "requer": [
+   "sv.Detections",
+   "np.isin"
+  ],
+  "codigo": "def detectar(quadro):\n    rgb = cv2.cvtColor(quadro, cv2.COLOR_BGR2RGB)\n    deteccoes = modelo.predict(rgb, threshold=LIMIAR_DETECTOR,\n                               include_source_image=False)\n    selecionadas = np.isin(deteccoes[\"class_name\"], classes_veiculos)\n    return deteccoes[selecionadas]"
+ },
+ {
+  "id": "nb01-formatos",
+  "origem": "projeto-3/01_supervision.ipynb, células 26 e 28",
+  "execucao": "executado",
+  "preparo": "veiculos = sv.Detections(xyxy=np.array([[180.0, 327.0, 254.0, 363.0]]), confidence=np.array([0.84]), class_id=np.array([2]))",
+  "codigo": "xyxy = veiculos.xyxy.copy()\nxywh = sv.xyxy_to_xywh(xyxy)\ncxcywh = xywh.copy()\ncxcywh[:, :2] += xywh[:, 2:] / 2\nprint(\"xyxy:\", xyxy[0])\nprint(\"xywh:\", xywh[0])\nprint(\"cxcywh:\", cxcywh[0])\nnp.testing.assert_allclose(sv.xywh_to_xyxy(xywh), xyxy)",
+  "verificacao": "assert np.allclose(cxcywh[0], [217.0, 345.0, 74.0, 36.0])"
+ },
+ {
+  "id": "nb02-c22-rastreador",
+  "origem": "projeto-3/02_tracking.ipynb, célula 22",
+  "execucao": "executado",
+  "preparo": "class info:\n    fps = 30.0",
+  "codigo": "from trackers import ByteTrackTracker\ndef criar_rastreador():\n    return ByteTrackTracker(frame_rate=info.fps,\n        high_conf_det_threshold=0.25, track_activation_threshold=0.35,\n        minimum_consecutive_frames=2, minimum_iou_threshold=0.10,\n        lost_track_buffer=30)",
+  "verificacao": "r = criar_rastreador()\nassert isinstance(r, ByteTrackTracker)\nassert r.maximum_frames_without_update == 30"
+ },
+ {
+  "id": "nb02-c28-processar",
+  "origem": "projeto-3/02_tracking.ipynb, célula 28 (trecho)",
+  "execucao": "executado",
+  "preparo": "from trackers import ByteTrackTracker\ndef detectar(quadro):\n    t = quadro[0, 0, 0]\n    return sv.Detections(xyxy=np.array([[100.0 + 4 * t, 100, 140 + 4 * t, 120]]), confidence=np.array([0.9]), class_id=np.array([2]))\ndef anotar(quadro, confirmadas, rastros):\n    return confirmadas",
+  "codigo": "def processar(quadro, indice, rastreador, rastros, registros):\n    deteccoes = detectar(quadro)\n    retorno = rastreador.update(deteccoes)\n    confirmadas = retorno[retorno.tracker_id != -1]\n    ...\n    return anotar(quadro, confirmadas, rastros)",
+  "verificacao": "r = ByteTrackTracker(frame_rate=30.0, high_conf_det_threshold=0.25, track_activation_threshold=0.35, minimum_consecutive_frames=2, minimum_iou_threshold=0.10, lost_track_buffer=30)\nsaidas = [processar(np.full((4, 4, 3), t, dtype=np.uint8), t, r, None, []) for t in range(3)]\nassert [len(s) for s in saidas] == [0, 1, 1]\nassert saidas[1].tracker_id.tolist() == [0]"
+ },
+ {
+  "id": "curso-pipeline-minimo",
+  "origem": "Escrito para esta aula; executado em Python nas versões fixadas",
+  "execucao": "executado",
+  "codigo": "import numpy as np\nimport supervision as sv\nfrom trackers import ByteTrackTracker\n\ntracker = ByteTrackTracker(frame_rate=30.0, high_conf_det_threshold=0.25,\n    track_activation_threshold=0.35, minimum_consecutive_frames=2,\n    minimum_iou_threshold=0.10, lost_track_buffer=30)\ncaixas = sv.BoxAnnotator(color_lookup=sv.ColorLookup.TRACK)\nquadro = np.zeros((720, 1280, 3), dtype=np.uint8)  # BGR, como o OpenCV entrega\nfor t in range(3):\n    deteccoes = sv.Detections(  # no notebook, vem do detector\n        xyxy=np.array([[100.0 + 4 * t, 100, 140 + 4 * t, 120]]),\n        confidence=np.array([0.9]), class_id=np.array([2]))\n    retorno = tracker.update(deteccoes)  # atualizar mesmo sem detecções\n    confirmadas = retorno[retorno.tracker_id != -1]\n    imagem = caixas.annotate(quadro.copy(), confirmadas)\n    print(t, retorno.tracker_id)",
+  "verificacao": "assert retorno.tracker_id.tolist() == [0]"
+ },
+ {
+  "id": "nb03-c22-ultralytics",
+  "origem": "projeto-3/03_projeto_final.ipynb, célula 22",
+  "execucao": "ilustrativo",
+  "motivo": "Requer o pacote ultralytics e os pesos YOLOv8x do projeto final; não é executado na validação. O adaptador é conferido na versão fixada.",
+  "requer": [
+   "sv.Detections.from_ultralytics"
+  ],
+  "codigo": "resultado = modelo.predict(frame, conf=CONF_DETECTOR, iou=0.50,\n                            imgsz=640, device=DISPOSITIVO, verbose=False)[0]\ndeteccoes = sv.Detections.from_ultralytics(resultado)"
+ }
+]

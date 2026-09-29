@@ -23,12 +23,6 @@ export interface Questao {
   opcoes: OpcaoQuestao[];
 }
 
-export interface TrechoCodigo {
-  // Origem exata no repositório, por exemplo "projeto-3/02_tracking.ipynb, célula 22".
-  origem: string;
-  codigo: string;
-}
-
 // Estado da cena que um passo impõe ao palco 3D.
 export interface CenaDoPasso {
   cenario: IdCenarioCurso;
@@ -55,6 +49,13 @@ export interface AssociacaoManual {
   quadroB: number;
 }
 
+// Tabela curta no roteiro (células aceitam `código` e **negrito**).
+export interface TabelaPasso {
+  legenda: string;
+  colunas: string[];
+  linhas: string[][];
+}
+
 export interface Passo {
   id: string;
   fase: Fase;
@@ -74,7 +75,9 @@ export interface Passo {
   faseQuadro?: boolean;
   comparacao?: Comparacao;
   associacaoManual?: AssociacaoManual;
-  codigo?: TrechoCodigo[];
+  // ids de src/curso/trechos.json (validados por scripts/validar-trechos.py).
+  codigo?: string[];
+  tabela?: TabelaPasso;
   questao?: Questao;
   fontes: string[];
 }

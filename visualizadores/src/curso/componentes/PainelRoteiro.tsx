@@ -7,7 +7,8 @@ import { indiceLinear, totalPassos } from '../progresso.ts';
 import type { Aula, Capitulo, Fase, Passo, ProgressoCurso } from '../tipos.ts';
 import Questao from './Questao.tsx';
 import Referencia from './Referencia.tsx';
-import TextoRico from './TextoRico.tsx';
+import TextoRico, { formatar } from './TextoRico.tsx';
+import TrechoPython from './TrechoPython.tsx';
 
 const FASE: Record<Fase, string> = {
   observar: 'Observar',
@@ -61,12 +62,19 @@ export default function PainelRoteiro(props: Props) {
         <h3 id={`titulo-${passo.id}`}>{passo.titulo}</h3>
         <TextoRico paragrafos={passo.texto} />
 
-        {passo.codigo?.map((c) => (
-          <figure key={c.origem} className="codigo">
-            <figcaption>{c.origem}</figcaption>
-            <pre><code>{c.codigo}</code></pre>
-          </figure>
-        ))}
+        {passo.tabela && (
+          <table className="tabela-passo">
+            <caption>{passo.tabela.legenda}</caption>
+            <thead><tr>{passo.tabela.colunas.map((c) => <th key={c} scope="col">{c}</th>)}</tr></thead>
+            <tbody>
+              {passo.tabela.linhas.map((l, i) => (
+                <tr key={i}>{l.map((c, j) => (j === 0 ? <th key={j} scope="row">{formatar(c)}</th> : <td key={j}>{formatar(c)}</td>))}</tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {passo.codigo?.map((id) => <TrechoPython key={id} id={id} />)}
 
         {meta && (
           <Controle
