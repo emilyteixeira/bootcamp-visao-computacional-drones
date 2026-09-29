@@ -3,3 +3,4 @@ dist/
 dist-link/
 test-results/
 playwright-report/
+.*.tmp.mjs

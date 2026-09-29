@@ -12,6 +12,7 @@ Laboratório 3D para ensinar conceitos de Visão Computacional. Primeiro módulo
 | 3D | three.js | 0.186 |
 | Renderizador React | @react-three/fiber | 9.8 |
 | Utilitários 3D (grade, gizmo e órbita no estilo do Blender, rótulos HTML, linhas) | @react-three/drei | 10.7 |
+| Linguagem | TypeScript (strict), testes com tsx + node:test | 7.0 / 4.23 |
 | Build | Vite 8 e vite-plugin-singlefile | 8.3 / 2.3 |
 
 Nenhuma biblioteca JavaScript é "baseada em Blender". A interação segue as convenções do Blender: `GizmoViewport` com eixos X vermelho, Y verde e Z azul, grade infinita, atalhos numéricos de vista (7, 1, 3, 0), Espaço para reproduzir, ←/→ para mudar de quadro e marcadores em losango na linha do tempo. Um modelo `.glb` exportado do Blender pode ser carregado com `useGLTF` do drei.
@@ -21,9 +22,10 @@ Nenhuma biblioteca JavaScript é "baseada em Blender". A interação segue as co
 ```bash
 cd visualizadores
 npm install
-npm run dev          # http://localhost:5173/#bytetrack
-npm test             # testes da lógica (node --test)
-npm run test:visual  # testes visuais Playwright (6 cenários, referências em tests/visual/referencias/)
+npm run dev          # http://localhost:5173/#bytetrack (laboratório) e #curso-bytetrack (Aula 1)
+npm run typecheck    # tsc strict (TypeScript 7)
+npm test             # testes da lógica (tsx + node:test), incluindo fixtures do trackers 2.6.1
+npm run test:visual  # Playwright: laboratório, Aula 1, vista 2D, teclado e axe (20 testes, referências em tests/visual/referencias/)
 npm run build:pages  # dist/ com base /bootcamp-visao-computacional-drones/ (GitHub Pages)
 npm run build        # dist/ (vários arquivos, para hospedagem estática)
 npm run build:link   # dist-link/laboratorio-bytetrack.html (arquivo único, para publicar)
@@ -33,33 +35,50 @@ npm run build:link   # dist-link/laboratorio-bytetrack.html (arquivo único, par
 
 ```
 src/
-  registro.js                 ← lista de visualizadores (menu + rotas #id)
-  App.jsx                     ← casca: barra superior, roteamento por âncora
+  registro.ts                 ← lista de visualizadores (menu + rotas #id)
+  App.tsx                     ← casca: barra superior, roteamento por âncora
   nucleo/                     ← peças reutilizáveis por qualquer visualizador
-    Viewport3D.jsx            ← Canvas, grade, gizmo, vistas 7/1/3/0, pxParaMundo()
-    usarReproducao.js         ← play/pausa/velocidade/atalhos de quadro
-    ui/Controle.jsx, ui/LinhaDoTempo.jsx
-    rng.js, geometria.js (IoU), hungaro.js (atribuição + associarPorIou)
+    Viewport3D.tsx            ← Canvas, grade, gizmo, vistas 7/1/3/0, pxParaMundo()
+    usarReproducao.ts         ← play/pausa/velocidade/atalhos de quadro
+    ui/Controle.tsx, ui/LinhaDoTempo.tsx
+    rng.ts, geometria.ts (IoU), hungaro.ts (atribuição + associarPorIou)
   visualizadores/
     bytetrack/                ← módulo pronto
-      cenarios.js             ← 3 cenas sintéticas + detector simulado
-      kalman.js, bytetrack.js ← tracker didático (semântica do trackers.ByteTrackTracker)
-      metricas.js             ← IDs, trocas, cobertura, falsos positivos, atraso
-      parametros.js           ← textos didáticos, predefinições e varredura
-      Cena3D.jsx, Paineis.jsx, GraficoSensibilidade.jsx, ByteTrackVisualizador.jsx
+      tipos.ts                ← contratos (Detection, TrackSnapshot, Instantaneo…)
+      cenarios.ts             ← 3 cenas sintéticas + detector simulado
+      kalman.ts, bytetrack.ts ← tracker didático (associação e ciclo de vida do trackers 2.6.1; Kalman simplificado)
+      metricas.ts             ← IDs, trocas, cobertura, falsos positivos, atraso
+      parametros.ts           ← textos didáticos, predefinições e varredura
+      Cena3D.tsx, Paineis.tsx, GraficoSensibilidade.tsx, ByteTrackVisualizador.tsx
     _modelo/                  ← ponto de partida para novos visualizadores
-tests/bytetrack.test.js
+tests/bytetrack.test.ts, tests/fixtures-python.test.ts, tests/fixtures/bytetrack/*.json
+scripts/exportar-fixtures-bytetrack.py   ← regenera as fixtures com o ByteTrackTracker real
 ```
 
 ## Adicionar um visualizador
 
 1. Copie `src/visualizadores/_modelo/` para `src/visualizadores/<id>/`.
-2. Em `src/registro.js`, mude a entrada para `status: 'pronto'` e adicione `Componente: lazy(() => import('./visualizadores/<id>/<Nome>.jsx'))`. As vagas reservadas são `iou-nms`, `kalman`, `linezone` e `homografia`.
-3. Mantenha a matemática em `.js` puro e crie `tests/<id>.test.js`.
+2. Em `src/registro.ts`, mude a entrada para `status: 'pronto'` e adicione `Componente: lazy(() => import('./visualizadores/<id>/<Nome>.tsx'))`. As vagas reservadas são `iou-nms`, `kalman`, `linezone` e `homografia`.
+3. Mantenha a matemática em `.ts` puro (sem React) e crie `tests/<id>.test.ts`.
 4. Rode `npm run build:link` e republique o HTML no mesmo link.
 
 ## GitHub Pages
 
-O workflow `.github/workflows/visualizadores-pages.yml` roda `npm test`, os testes visuais e a build. Em push na `main`, ele publica em `https://emilyteixeira.github.io/bootcamp-visao-computacional-drones/#bytetrack`. Pré-requisito: em Settings → Pages, escolha Source: **GitHub Actions**. Localmente, `CHROMIUM_PATH=/opt/pw-browsers/chromium` aponta o Chromium do container.
+O workflow `.github/workflows/visualizadores-pages.yml` roda `npm run typecheck`, `npm test`, os testes visuais e a build. Em push na `main`, ele publica em `https://emilyteixeira.github.io/bootcamp-visao-computacional-drones/#bytetrack`. Pré-requisito: em Settings → Pages, escolha Source: **GitHub Actions**. Localmente, `CHROMIUM_PATH=/opt/pw-browsers/chromium` aponta o Chromium do container.
 
 Documentos de continuidade: [HANDOVER.md](HANDOVER.md) e [docs/historico/](docs/historico/).
+
+## Scripts de referência Python (fora da CI)
+
+Rodar num ambiente com `trackers==2.6.1`, `supervision==0.30.5` e `numpy==2.3.5` (sem GPU):
+
+```bash
+python scripts/exportar-fixtures-bytetrack.py            # tests/fixtures/bytetrack/*.json
+npx tsx scripts/exportar-cenas.ts oclusao > cena.json
+python scripts/exportar-replays-bytetrack.py cena.json oclusao-nb02
+python scripts/exportar-replays-bytetrack.py cena.json oclusao-nb02-buffer60 lost_track_buffer=60
+python scripts/validar-trechos.py                        # src/curso/validacao-trechos.json
+npx tsx scripts/medir-desempenho.ts                      # tempo de recálculo por cena
+```
+
+Os testes unitários acusam quando uma cena, um trecho ou o motor mudam sem regenerar esses arquivos.

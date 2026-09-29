@@ -1,0 +1,312 @@
+{
+ "schemaVersion": 1,
+ "nome": "recuperacao-baixa-filtrada",
+ "descricao": "Filtro 0,25: as caixas 0,18 não chegam ao tracker.",
+ "parametros": {
+  "frame_rate": 30.0,
+  "high_conf_det_threshold": 0.25,
+  "track_activation_threshold": 0.35,
+  "minimum_consecutive_frames": 2,
+  "minimum_iou_threshold": 0.1,
+  "lost_track_buffer": 3,
+  "limiar_detector": 0.25,
+  "maximum_frames_without_update": 3
+ },
+ "quadros": [
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      80.0,
+      90.0,
+      120.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": -1,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      80.0,
+      90.0,
+      120.0,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      84.0,
+      90.0,
+      124.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      83.8104,
+      90.0,
+      123.8104,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      88.0,
+      90.0,
+      128.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 3,
+     "xyxy": [
+      87.7257,
+      90.0,
+      127.7257,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      92.0,
+      90.0,
+      132.0,
+      110.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 1,
+     "consecutivas": 3,
+     "xyxy": [
+      91.2221,
+      90.0,
+      131.2221,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      96.0,
+      90.0,
+      136.0,
+      110.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 2,
+     "consecutivas": 0,
+     "xyxy": [
+      94.7185,
+      90.0,
+      134.7185,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      100.0,
+      90.0,
+      140.0,
+      110.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 3,
+     "consecutivas": 0,
+     "xyxy": [
+      98.2149,
+      90.0,
+      138.2149,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      104.0,
+      90.0,
+      144.0,
+      110.0
+     ],
+     "confidence": 0.18
+    }
+   ],
+   "saida": [],
+   "trilhas": []
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      108.0,
+      90.0,
+      148.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": -1,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      108.0,
+      90.0,
+      148.0,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      112.0,
+      90.0,
+      152.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 1,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      111.8104,
+      90.0,
+      151.8104,
+      110.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      116.0,
+      90.0,
+      156.0,
+      110.0
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 1,
+     "sem_atualizar": 0,
+     "consecutivas": 3,
+     "xyxy": [
+      115.7257,
+      90.0,
+      155.7257,
+      110.0
+     ]
+    }
+   ]
+  }
+ ],
+ "ambiente": {
+  "python": "3.11.15",
+  "trackers": "2.6.1",
+  "supervision": "0.30.5",
+  "numpy": "2.3.5",
+  "scipy": "1.17.1"
+ }
+}

@@ -1,0 +1,32 @@
+{
+ "schemaVersion": 1,
+ "ambiente": {
+  "python": "3.11.15",
+  "trackers": "2.6.1",
+  "supervision": "0.30.5",
+  "numpy": "2.3.5",
+  "scipy": "1.17.1"
+ },
+ "fixtures": [
+  "nascimento",
+  "quadros-vazios",
+  "limites-thresholds",
+  "baixa-isolada",
+  "recuperacao-baixa",
+  "recuperacao-baixa-filtrada",
+  "confirmacao-interrompida",
+  "buffer-lacuna-3",
+  "buffer-lacuna-4",
+  "buffer-zero",
+  "buffer-fps-25",
+  "etapa2-tentativa",
+  "etapa2-perdida",
+  "confirmacao-1-quadro",
+  "confirmacao-3-quadros",
+  "tentativa-sobrevive-min1",
+  "ambiguidade-limiar",
+  "microcena-filtro-010",
+  "microcena-filtro-025",
+  "kalman-oclusao"
+ ]
+}

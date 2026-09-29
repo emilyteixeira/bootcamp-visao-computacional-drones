@@ -1,0 +1,270 @@
+{
+ "schemaVersion": 1,
+ "nome": "ambiguidade-limiar",
+ "descricao": "Atribuição ótima seguida de rejeição pelo IoU mínimo.",
+ "parametros": {
+  "frame_rate": 30.0,
+  "high_conf_det_threshold": 0.25,
+  "track_activation_threshold": 0.35,
+  "minimum_consecutive_frames": 2,
+  "minimum_iou_threshold": 0.1,
+  "lost_track_buffer": 30,
+  "limiar_detector": 0.1,
+  "maximum_frames_without_update": 30
+ },
+ "quadros": [
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      28,
+      12,
+      72,
+      68
+     ],
+     "confidence": 0.9
+    },
+    {
+     "xyxy": [
+      64,
+      20,
+      92,
+      72
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": -1
+    },
+    {
+     "det": 1,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": -1,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      28.0,
+      12.0,
+      72.0,
+      68.0
+     ]
+    },
+    {
+     "tracker_id": -1,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      64.0,
+      20.0,
+      92.0,
+      72.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      28,
+      12,
+      72,
+      68
+     ],
+     "confidence": 0.9
+    },
+    {
+     "xyxy": [
+      64,
+      20,
+      92,
+      72
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    },
+    {
+     "det": 1,
+     "tracker_id": 1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      28.0,
+      12.0,
+      72.0,
+      68.0
+     ]
+    },
+    {
+     "tracker_id": 1,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      64.0,
+      20.0,
+      92.0,
+      72.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      28,
+      16,
+      88,
+      68
+     ],
+     "confidence": 0.9
+    },
+    {
+     "xyxy": [
+      12,
+      32,
+      68,
+      56
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    },
+    {
+     "det": 1,
+     "tracker_id": -1
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 3,
+     "xyxy": [
+      28.0,
+      15.5216,
+      86.0864,
+      68.0
+     ]
+    },
+    {
+     "tracker_id": 1,
+     "sem_atualizar": 1,
+     "consecutivas": 2,
+     "xyxy": [
+      64.0,
+      20.0,
+      92.0,
+      72.0
+     ]
+    },
+    {
+     "tracker_id": -1,
+     "sem_atualizar": 0,
+     "consecutivas": 1,
+     "xyxy": [
+      12.0,
+      32.0,
+      68.0,
+      56.0
+     ]
+    }
+   ]
+  },
+  {
+   "deteccoes": [
+    {
+     "xyxy": [
+      28,
+      16,
+      88,
+      68
+     ],
+     "confidence": 0.9
+    },
+    {
+     "xyxy": [
+      12,
+      32,
+      68,
+      56
+     ],
+     "confidence": 0.9
+    }
+   ],
+   "saida": [
+    {
+     "det": 0,
+     "tracker_id": 0
+    },
+    {
+     "det": 1,
+     "tracker_id": 2
+    }
+   ],
+   "trilhas": [
+    {
+     "tracker_id": 0,
+     "sem_atualizar": 0,
+     "consecutivas": 4,
+     "xyxy": [
+      28.0,
+      16.4854,
+      89.9415,
+      68.0
+     ]
+    },
+    {
+     "tracker_id": 1,
+     "sem_atualizar": 2,
+     "consecutivas": 0,
+     "xyxy": [
+      64.0,
+      20.0,
+      92.0,
+      72.0
+     ]
+    },
+    {
+     "tracker_id": 2,
+     "sem_atualizar": 0,
+     "consecutivas": 2,
+     "xyxy": [
+      12.0,
+      32.0,
+      68.0,
+      56.0
+     ]
+    }
+   ]
+  }
+ ],
+ "ambiente": {
+  "python": "3.11.15",
+  "trackers": "2.6.1",
+  "supervision": "0.30.5",
+  "numpy": "2.3.5",
+  "scipy": "1.17.1"
+ }
+}
